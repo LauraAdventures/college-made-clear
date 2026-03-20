@@ -1,872 +1,1040 @@
-// ============================================================
-// College Made Clear — Financial Aid Comparison Tool
-// Google Apps Script — paste into Extensions > Apps Script
-// then click Run > buildWorkbook
-// ============================================================
-
-function buildWorkbook() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-
-  // Remove default sheet at end, build all tabs first
-  var defaultSheet = ss.getSheetByName("Sheet1");
-
-  buildComparison(ss);
-  buildProjection(ss);
-  buildStudentLoans(ss);
-  buildParentPLUS(ss);
-  buildPrivateLoans(ss);
-  buildExplainer(ss);
-
-  if (defaultSheet) ss.deleteSheet(defaultSheet);
-
-  // Name the spreadsheet
-  ss.rename("Financial Aid Comparison — College Made Clear");
-  SpreadsheetApp.getUi().alert("✅ Done! Your Financial Aid Comparison workbook is ready.");
-}
-
-// ── PALETTE ──────────────────────────────────────────────────
-var C = {
-  purpleDark:  "#4A3F63",
-  purple:      "#6B5B8B",
-  purpleTint:  "#EDE9F4",
-  greyDark:    "#4A4A4A",
-  greyMid:     "#888888",
-  greyLight:   "#F5F5F5",
-  white:       "#FFFFFF",
-  inputBlue:   "#1A56A0",
-  orangeTint:  "#FFF3E0",
-  orangeText:  "#E65100",
-  greenDark:   "#2E7D6B",
-  greenTint:   "#E8F4F0",
-  amberTint:   "#FFF8E1",
-  amberText:   "#B05C00",
-  redTint:     "#FDECEA",
-  redText:     "#C62828",
-  yellowTint:  "#FFFDE7",
-  sageTint:    "#D6EAE5",
-  lightGold:   "#F5E6C8",
-  amber:       "#B05C00"
-};
-
-// ── STYLE HELPERS ─────────────────────────────────────────────
-
-function setCell(sheet, row, col, value, opts) {
-  var cell = sheet.getRange(row, col);
-  if (value !== null && value !== undefined) cell.setValue(value);
-  var o = opts || {};
-  if (o.bg)        cell.setBackground(o.bg);
-  if (o.fc)        cell.setFontColor(o.fc);
-  if (o.bold)      cell.setFontWeight("bold");
-  if (o.italic)    cell.setFontStyle("italic");
-  if (o.size)      cell.setFontSize(o.size);
-  if (o.halign)    cell.setHorizontalAlignment(o.halign);
-  if (o.valign)    cell.setVerticalAlignment(o.valign || "middle");
-  if (o.wrap)      cell.setWrap(true);
-  if (o.fmt)       cell.setNumberFormat(o.fmt);
-  if (o.font)      cell.setFontFamily(o.font);
-  cell.setFontFamily("Arial");
-  return cell;
-}
-
-function headerRow(sheet, row, text, bg, fc, height, size) {
-  sheet.setRowHeight(row, height || 22);
-  var range = sheet.getRange(row, 1, 1, sheet.getMaxColumns() <= 5 ? 5 : 9);
-  range.merge();
-  setCell(sheet, row, 1, text, {bg: bg, fc: fc, bold: true, size: size || 10, halign: "left", valign: "middle"});
-  sheet.getRange(row, 1).setIndent(1);
-}
-
-function spacerRow(sheet, row, height) {
-  sheet.setRowHeight(row, height || 8);
-  sheet.getRange(row, 1, 1, 9).setBackground(C.white);
-}
-
-function inputCell(sheet, row, col, value, fmt) {
-  setCell(sheet, row, col, value, {bg: C.purpleTint, fc: C.inputBlue, bold: true, halign: "center", fmt: fmt || '#,##0'});
-  sheet.getRange(row, col).setBorder(true, true, true, true, false, false, C.purple, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-}
-
-function heroCell(sheet, row, col, formula, ncols) {
-  sheet.setRowHeight(row, 36);
-  var r = sheet.getRange(row, 1);
-  r.setValue("Monthly Payment").setBackground(C.purpleTint).setFontColor(C.purpleDark)
-   .setFontWeight("bold").setFontSize(12).setVerticalAlignment("middle").setFontFamily("Arial");
-  r.setIndent(1);
-  r.setBorder(true, true, true, true, false, false, C.purple, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-  var valRange = sheet.getRange(row, 2, 1, ncols || 4);
-  valRange.merge().setFormula(formula)
-    .setBackground(C.purpleTint).setFontColor(C.purpleDark).setFontWeight("bold").setFontSize(13)
-    .setHorizontalAlignment("center").setVerticalAlignment("middle").setNumberFormat('"$"#,##0')
-    .setFontFamily("Arial");
-  valRange.setBorder(true, true, true, true, false, false, C.purple, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-}
-
-function wowCell(sheet, row, formula, label, ncols) {
-  sheet.setRowHeight(row, 32);
-  var r = sheet.getRange(row, 1);
-  r.setValue(label || "Total Interest Paid  ← the number most families never see")
-   .setBackground(C.orangeTint).setFontColor(C.orangeText).setFontWeight("bold").setFontSize(11)
-   .setVerticalAlignment("middle").setWrap(true).setFontFamily("Arial");
-  r.setIndent(1);
-  r.setBorder(true, true, true, true, false, false, C.orangeText, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-  var valRange = sheet.getRange(row, 2, 1, ncols || 4);
-  valRange.merge().setFormula(formula)
-    .setBackground(C.orangeTint).setFontColor(C.orangeText).setFontWeight("bold").setFontSize(13)
-    .setHorizontalAlignment("center").setVerticalAlignment("middle").setNumberFormat('"$"#,##0')
-    .setFontFamily("Arial");
-  valRange.setBorder(true, true, true, true, false, false, C.orangeText, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-}
-
-// ── TAB 1: COMPARISON ─────────────────────────────────────────
-function buildComparison(ss) {
-  var ws = ss.insertSheet("Comparison", 0);
-  ws.setColumnWidth(1, 220);
-  for (var c = 2; c <= 9; c++) ws.setColumnWidth(c, 115);
-  ws.setFrozenRows(2);
-
-  // Title
-  ws.setRowHeight(1, 38);
-  ws.getRange(1,1,1,9).merge().setValue("Financial Aid Award Letter Comparison")
-    .setBackground(C.purpleDark).setFontColor(C.white).setFontWeight("bold").setFontSize(14)
-    .setHorizontalAlignment("center").setVerticalAlignment("middle").setFontFamily("Arial");
-
-  // School name headers row 2
-  ws.setRowHeight(2, 40);
-  setCell(ws, 2, 1, "Enter school names →", {bg: C.purple, fc: C.white, italic: true, size: 9, halign: "right"});
-  for (var col = 2; col <= 9; col++) {
-    setCell(ws, 2, col, "School " + (col-1), {bg: C.purple, fc: C.white, bold: true, size: 10, halign: "center"});
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>College Made Clear — Free Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --purple:      #6B5B8B;
+    --purple-dark: #4A3F63;
+    --purple-tint: #EDE9F4;
+    --green:       #2E7D6B;
+    --green-tint:  #E8F4F0;
+    --orange:      #E65100;
+    --orange-tint: #FFF3E0;
+    --amber:       #B05C00;
+    --amber-tint:  #FFF8E1;
+    --grey-dark:   #3A3A3A;
+    --grey-mid:    #777;
+    --grey-light:  #F7F6F4;
+    --white:       #FFFFFF;
+    --border:      #E4E0F0;
+    --red:         #C62828;
+    --red-tint:    #FDECEA;
   }
 
-  spacerRow(ws, 3, 6);
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  // DIRECT COSTS
-  headerRow(ws, 4, "  DIRECT COSTS", C.purpleDark, C.white, 22);
-  var directLabels = ["Tuition & Fees", "Room", "Board", "Other Direct Costs"];
-  for (var i = 0; i < directLabels.length; i++) {
-    var r = 5 + i;
-    ws.setRowHeight(r, 20);
-    var bg = (i % 2 === 0) ? C.white : C.greyLight;
-    setCell(ws, r, 1, directLabels[i], {bg: bg, fc: C.greyDark, halign: "left"});
-    ws.getRange(r, 1).setIndent(1);
-    for (var col = 2; col <= 9; col++) {
-      ws.getRange(r, col).setBackground(bg).setFontColor(C.inputBlue).setFontFamily("Arial")
-        .setHorizontalAlignment("right").setNumberFormat('"$"#,##0').setValue(0);
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #F4F2F8;
+    color: var(--grey-dark);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .site-header {
+    background: var(--purple-dark);
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .site-header .logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.15rem;
+    color: white;
+    letter-spacing: -0.01em;
+  }
+  .site-header .logo span {
+    color: #C4B8D9;
+    font-style: italic;
+  }
+  .header-tag {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #C4B8D9;
+    background: rgba(255,255,255,0.1);
+    padding: 3px 8px;
+    border-radius: 20px;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: var(--purple-dark);
+    padding: 1.5rem 1.25rem 2rem;
+    text-align: center;
+  }
+  .hero h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.6rem;
+    color: white;
+    line-height: 1.2;
+    margin-bottom: 0.5rem;
+  }
+  .hero p {
+    font-size: 0.85rem;
+    color: #C4B8D9;
+    line-height: 1.6;
+    max-width: 340px;
+    margin: 0 auto;
+  }
+
+  /* ── TABS ── */
+  .tabs-wrapper {
+    background: var(--purple-dark);
+    padding: 0 1.25rem;
+    display: flex;
+    gap: 4px;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 0.65rem 0.5rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: rgba(255,255,255,0.1);
+    color: #C4B8D9;
+  }
+  .tab-btn.active {
+    background: #F4F2F8;
+    color: var(--purple-dark);
+  }
+
+  /* ── MAIN CARD ── */
+  .main {
+    padding: 1.25rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ── SECTION LABELS ── */
+  .section-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--grey-mid);
+    margin: 1.5rem 0 0.75rem;
+    padding-left: 2px;
+  }
+  .section-label:first-child { margin-top: 0; }
+
+  /* ── SCHOOL CARDS ── */
+  .schools-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+  .school-card {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .school-card-header {
+    background: var(--purple);
+    padding: 8px 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: white;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .school-name-input {
+    width: 100%;
+    border: none;
+    padding: 8px 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--grey-dark);
+    background: white;
+    outline: none;
+  }
+  .school-name-input::placeholder { color: #bbb; font-weight: 400; }
+
+  /* ── INPUT GROUPS ── */
+  .input-group {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .input-group-header {
+    padding: 10px 14px 6px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--grey-mid);
+    border-bottom: 1px solid var(--border);
+    background: var(--grey-light);
+  }
+  .input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
+    padding: 8px 14px;
+    border-bottom: 1px solid #F0EDF8;
+    gap: 8px;
+  }
+  .input-row:last-child { border-bottom: none; }
+  .input-row label {
+    font-size: 0.78rem;
+    color: var(--grey-dark);
+    grid-column: 1;
+  }
+  .input-row input[type="number"] {
+    grid-column: span 1;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    color: var(--purple-dark);
+    font-weight: 600;
+    text-align: right;
+    width: 100%;
+    outline: none;
+    background: var(--purple-tint);
+    transition: border-color 0.15s;
+    -moz-appearance: textfield;
+  }
+  .input-row input[type="number"]:focus { border-color: var(--purple); }
+  .input-row input[type="number"]::-webkit-outer-spin-button,
+  .input-row input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .col-header {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--grey-mid);
+    text-align: right;
+  }
+
+  /* ── RESULTS ── */
+  .results-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-top: 1rem;
+  }
+  .results-header {
+    background: var(--purple-dark);
+    padding: 12px 16px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .result-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    padding: 10px 16px;
+    border-bottom: 1px solid #F0EDF8;
+    align-items: center;
+    gap: 8px;
+  }
+  .result-row:last-child { border-bottom: none; }
+  .result-row .result-label {
+    font-size: 0.78rem;
+    color: var(--grey-dark);
+    grid-column: 1;
+  }
+  .result-row .result-val {
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-align: right;
+    color: var(--grey-dark);
+  }
+  .result-row.green-row { background: var(--green-tint); }
+  .result-row.green-row .result-label { color: var(--green); font-weight: 500; }
+  .result-row.green-row .result-val { color: var(--green); }
+
+  /* HERO result row */
+  .hero-result-row {
+    padding: 14px 16px;
+    border-bottom: 1px solid #E4DFF5;
+    background: var(--purple-tint);
+  }
+  .hero-result-row .hero-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-bottom: 6px;
+  }
+  .hero-amounts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .hero-amount-block {
+    background: white;
+    border: 1.5px solid var(--purple);
+    border-radius: 10px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+  .hero-amount-block .school-name-tag {
+    font-size: 0.65rem;
+    color: var(--purple);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+  .hero-amount-block .big-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.5rem;
+    color: var(--purple-dark);
+    line-height: 1;
+  }
+  .hero-amount-block .per-year {
+    font-size: 0.65rem;
+    color: var(--grey-mid);
+    margin-top: 2px;
+  }
+  .hero-result-row .hero-note {
+    font-size: 0.72rem;
+    color: var(--grey-mid);
+    font-style: italic;
+    margin-top: 8px;
+  }
+
+  /* ── LOAN TAB ── */
+  .loan-type-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 1rem;
+  }
+  .loan-type-btn {
+    padding: 10px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    background: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--grey-mid);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .loan-type-btn.active {
+    border-color: var(--purple);
+    background: var(--purple-tint);
+    color: var(--purple-dark);
+  }
+
+  .student-type-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 10px;
+  }
+  .student-type-row label {
+    font-size: 0.78rem;
+    color: var(--grey-dark);
+    font-weight: 500;
+    flex: 1;
+  }
+  .student-type-row select {
+    border: 1.5px solid var(--purple);
+    border-radius: 6px;
+    padding: 5px 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    color: var(--purple-dark);
+    font-weight: 600;
+    background: var(--purple-tint);
+    outline: none;
+  }
+
+  .year-inputs {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .year-inputs-header {
+    background: var(--purple);
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    padding: 8px 14px;
+    gap: 6px;
+  }
+  .year-inputs-header span {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: white;
+    text-align: center;
+    letter-spacing: 0.04em;
+  }
+  .year-inputs-header span:first-child { text-align: left; color: rgba(255,255,255,0.7); }
+  .limit-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    padding: 6px 14px;
+    gap: 6px;
+    background: var(--amber-tint);
+    border-bottom: 1px solid #F0E4C0;
+  }
+  .limit-row span {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--amber);
+    text-align: center;
+  }
+  .limit-row span:first-child { text-align: left; font-style: italic; font-weight: 400; }
+  .year-input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    padding: 7px 14px;
+    gap: 6px;
+    border-bottom: 1px solid #F0EDF8;
+    align-items: center;
+  }
+  .year-input-row:last-child { border-bottom: none; }
+  .year-input-row label {
+    font-size: 0.72rem;
+    color: var(--grey-dark);
+  }
+  .year-input-row input {
+    border: 1.5px solid var(--border);
+    border-radius: 5px;
+    padding: 5px 4px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72rem;
+    color: var(--purple-dark);
+    font-weight: 600;
+    text-align: right;
+    width: 100%;
+    background: var(--purple-tint);
+    outline: none;
+    -moz-appearance: textfield;
+  }
+  .year-input-row input::-webkit-outer-spin-button,
+  .year-input-row input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  .assumption-row {
+    display: flex;
+    align-items: center;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    gap: 10px;
+  }
+  .assumption-row label { font-size: 0.78rem; color: var(--grey-dark); flex: 1; }
+  .assumption-row input {
+    border: 1.5px solid var(--purple);
+    border-radius: 6px;
+    padding: 5px 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    color: var(--purple-dark);
+    font-weight: 600;
+    width: 80px;
+    text-align: center;
+    background: var(--purple-tint);
+    outline: none;
+    -moz-appearance: textfield;
+  }
+  .assumption-row input::-webkit-outer-spin-button,
+  .assumption-row input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .assumption-row .rate-note { font-size: 0.68rem; color: var(--grey-mid); font-style: italic; }
+
+  /* Loan results */
+  .loan-results {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-top: 1rem;
+  }
+  .loan-results-header {
+    background: var(--purple-dark);
+    padding: 12px 16px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .loan-result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 11px 16px;
+    border-bottom: 1px solid #F0EDF8;
+  }
+  .loan-result-row:last-child { border-bottom: none; }
+  .loan-result-row .lbl { font-size: 0.78rem; color: var(--grey-dark); }
+  .loan-result-row .val { font-size: 0.85rem; font-weight: 600; color: var(--grey-dark); }
+  .loan-result-row.hero-loan {
+    background: var(--purple-tint);
+    padding: 14px 16px;
+  }
+  .loan-result-row.hero-loan .lbl { font-weight: 600; color: var(--purple-dark); font-size: 0.85rem; }
+  .loan-result-row.hero-loan .val {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.6rem;
+    color: var(--purple-dark);
+  }
+  .loan-result-row.wow-row { background: var(--orange-tint); }
+  .loan-result-row.wow-row .lbl { color: var(--orange); font-weight: 600; }
+  .loan-result-row.wow-row .val { color: var(--orange); font-size: 0.95rem; }
+
+  /* ── UPSELL ── */
+  .upsell-card {
+    background: white;
+    border: 2px solid var(--purple);
+    border-radius: 16px;
+    padding: 1.25rem;
+    margin-top: 1.5rem;
+    text-align: center;
+  }
+  .upsell-card .upsell-eyebrow {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-bottom: 0.5rem;
+  }
+  .upsell-card h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.15rem;
+    color: var(--purple-dark);
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+  }
+  .upsell-card p {
+    font-size: 0.78rem;
+    color: var(--grey-mid);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+  .upsell-features {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 1rem;
+    text-align: left;
+  }
+  .upsell-feature {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    color: var(--grey-dark);
+  }
+  .upsell-feature .check {
+    width: 16px;
+    height: 16px;
+    background: var(--green);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 9px;
+    color: white;
+    font-weight: 700;
+  }
+  .upsell-btn {
+    display: block;
+    width: 100%;
+    padding: 13px;
+    background: var(--purple-dark);
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s;
+    letter-spacing: 0.02em;
+  }
+  .upsell-btn:hover { background: var(--purple); }
+
+  /* ── FOOTER ── */
+  .site-footer {
+    text-align: center;
+    padding: 1.5rem 1.25rem;
+    font-size: 0.7rem;
+    color: var(--grey-mid);
+    line-height: 1.8;
+  }
+  .site-footer strong { color: var(--purple-dark); font-weight: 600; }
+
+  /* ── CALC BUTTON ── */
+  .calc-btn {
+    width: 100%;
+    padding: 13px;
+    background: var(--purple);
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: 1rem;
+    letter-spacing: 0.02em;
+    transition: background 0.2s;
+  }
+  .calc-btn:hover { background: var(--purple-dark); }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="logo">College <span>Made Clear</span></div>
+  <span class="header-tag">Free Preview</span>
+</header>
+
+<div class="hero">
+  <h1>See What College<br>Actually Costs</h1>
+  <p>Compare two schools side by side and project your real loan payments — free.</p>
+</div>
+
+<div class="tabs-wrapper">
+  <button class="tab-btn active" onclick="switchTab('comparison')">🎓 Compare Schools</button>
+  <button class="tab-btn" onclick="switchTab('loans')">💰 Loan Projector</button>
+</div>
+
+<div class="main">
+
+  <!-- ══════════════════════════════════ -->
+  <!-- TAB 1: COMPARISON                 -->
+  <!-- ══════════════════════════════════ -->
+  <div class="tab-content active" id="tab-comparison">
+
+    <p class="section-label">School Names</p>
+    <div class="schools-grid">
+      <div class="school-card">
+        <div class="school-card-header">School 1</div>
+        <input class="school-name-input" id="school1-name" type="text" placeholder="e.g. UCLA" oninput="calcComparison()">
+      </div>
+      <div class="school-card">
+        <div class="school-card-header">School 2</div>
+        <input class="school-name-input" id="school2-name" type="text" placeholder="e.g. USC" oninput="calcComparison()">
+      </div>
+    </div>
+
+    <p class="section-label">Direct Costs</p>
+    <div class="input-group">
+      <div class="input-group-header">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+          <span></span>
+          <span class="col-header" id="ch1">School 1</span>
+          <span class="col-header" id="ch2">School 2</span>
+        </div>
+      </div>
+      <div class="input-row">
+        <label>Tuition & Fees</label>
+        <input type="number" id="c1-tuition" value="0" oninput="calcComparison()">
+        <input type="number" id="c2-tuition" value="0" oninput="calcComparison()">
+      </div>
+      <div class="input-row">
+        <label>Room</label>
+        <input type="number" id="c1-room" value="0" oninput="calcComparison()">
+        <input type="number" id="c2-room" value="0" oninput="calcComparison()">
+      </div>
+      <div class="input-row">
+        <label>Board</label>
+        <input type="number" id="c1-board" value="0" oninput="calcComparison()">
+        <input type="number" id="c2-board" value="0" oninput="calcComparison()">
+      </div>
+      <div class="input-row">
+        <label>Other</label>
+        <input type="number" id="c1-other" value="0" oninput="calcComparison()">
+        <input type="number" id="c2-other" value="0" oninput="calcComparison()">
+      </div>
+    </div>
+
+    <p class="section-label">Free Money — does not need to be repaid</p>
+    <div class="input-group">
+      <div class="input-group-header">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+          <span></span>
+          <span class="col-header">School 1</span>
+          <span class="col-header">School 2</span>
+        </div>
+      </div>
+      <div class="input-row">
+        <label>Pell Grant</label>
+        <input type="number" id="c1-pell" value="0" oninput="calcComparison()">
+        <input type="number" id="c2-pell" value="0" oninput="calcComparison()">
+      </div>
+      <div class="input-row">
+        <label>State Grants</label>
+        <input type="number" id="c1-state" value="0" oninput="calcComparison()">
+        <input type="number" id="c2-state" value="0" oninput="calcComparison()">
+      </div>
+      <div class="input-row">
+        <label>Inst. Grants</label>
+        <input type="number" id="c1-inst" value="0" oninput="calcComparison()">
+        <input type="number" id="c2-inst" value="0" oninput="calcComparison()">
+      </div>
+      <div class="input-row">
+        <label>Scholarships</label>
+        <input type="number" id="c1-schol" value="0" oninput="calcComparison()">
+        <input type="number" id="c2-schol" value="0" oninput="calcComparison()">
+      </div>
+    </div>
+
+    <p class="section-label">Self Help — loans &amp; work-study</p>
+    <div class="input-group">
+      <div class="input-group-header">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+          <span></span>
+          <span class="col-header">School 1</span>
+          <span class="col-header">School 2</span>
+        </div>
+      </div>
+      <div class="input-row">
+        <label>Loans</label>
+        <input type="number" id="c1-loans" value="0" oninput="calcComparison()">
+        <input type="number" id="c2-loans" value="0" oninput="calcComparison()">
+      </div>
+      <div class="input-row">
+        <label>Work-Study</label>
+        <input type="number" id="c1-ws" value="0" oninput="calcComparison()">
+        <input type="number" id="c2-ws" value="0" oninput="calcComparison()">
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="results-card" id="comp-results">
+      <div class="results-header">Your Results</div>
+
+      <div class="result-row">
+        <span class="result-label">Total Direct Costs</span>
+        <span class="result-val" id="r1-direct">$0</span>
+        <span class="result-val" id="r2-direct">$0</span>
+      </div>
+      <div class="result-row green-row">
+        <span class="result-label">Total Free Money</span>
+        <span class="result-val" id="r1-free">$0</span>
+        <span class="result-val" id="r2-free">$0</span>
+      </div>
+
+      <div class="hero-result-row">
+        <div class="hero-label">★ True Cost of College</div>
+        <div class="hero-amounts">
+          <div class="hero-amount-block">
+            <div class="school-name-tag" id="hero-s1">School 1</div>
+            <div class="big-num" id="r1-true">$0</div>
+            <div class="per-year">per year</div>
+          </div>
+          <div class="hero-amount-block">
+            <div class="school-name-tag" id="hero-s2">School 2</div>
+            <div class="big-num" id="r2-true">$0</div>
+            <div class="per-year">per year</div>
+          </div>
+        </div>
+        <div class="hero-note">Direct Costs minus Free Money — before any loans</div>
+      </div>
+
+      <div class="result-row">
+        <span class="result-label">Total Self Help</span>
+        <span class="result-val" id="r1-self">$0</span>
+        <span class="result-val" id="r2-self">$0</span>
+      </div>
+      <div class="result-row" style="background:#F7F6F4;">
+        <span class="result-label" style="font-weight:600;">Out of Pocket</span>
+        <span class="result-val" id="r1-oop">$0</span>
+        <span class="result-val" id="r2-oop">$0</span>
+      </div>
+    </div>
+
+    <!-- Upsell -->
+    <div class="upsell-card">
+      <div class="upsell-eyebrow">Want the full picture?</div>
+      <h3>Compare up to 8 schools with the complete spreadsheet</h3>
+      <p>This free tool covers two schools. The full Financial Aid Comparison workbook includes all 8, a 4-year cost projection, and complete loan calculators for federal and private loans.</p>
+      <div class="upsell-features">
+        <div class="upsell-feature"><span class="check">✓</span> Compare up to 8 schools side by side</div>
+        <div class="upsell-feature"><span class="check">✓</span> 4-year cost projection with inflation</div>
+        <div class="upsell-feature"><span class="check">✓</span> Federal student loan calculator</div>
+        <div class="upsell-feature"><span class="check">✓</span> Parent PLUS &amp; private loan projectors</div>
+        <div class="upsell-feature"><span class="check">✓</span> Loan type explainer built in</div>
+        <div class="upsell-feature"><span class="check">✓</span> Built by a college counselor</div>
+      </div>
+      <a class="upsell-btn" href="https://etsy.com" target="_blank">Get the Full Spreadsheet →</a>
+    </div>
+
+  </div><!-- /tab-comparison -->
+
+  <!-- ══════════════════════════════════ -->
+  <!-- TAB 2: LOAN PROJECTOR             -->
+  <!-- ══════════════════════════════════ -->
+  <div class="tab-content" id="tab-loans">
+
+    <p class="section-label">Loan Type</p>
+    <div class="loan-type-toggle">
+      <button class="loan-type-btn active" onclick="setLoanType('student')">Student Loans</button>
+      <button class="loan-type-btn" onclick="setLoanType('plus')">Parent PLUS</button>
+    </div>
+
+    <!-- Student type (student only) -->
+    <div id="student-type-wrapper">
+      <div class="student-type-row">
+        <label>Student type</label>
+        <select id="student-type" onchange="updateLimits(); calcLoans();">
+          <option value="dependent">Dependent</option>
+          <option value="independent">Independent</option>
+        </select>
+      </div>
+    </div>
+
+    <p class="section-label">Amount Borrowed Per Year</p>
+    <div class="year-inputs" id="student-inputs">
+      <div class="year-inputs-header">
+        <span>Type</span>
+        <span>Yr 1</span><span>Yr 2</span><span>Yr 3</span><span>Yr 4</span>
+      </div>
+      <div class="limit-row" id="limit-row">
+        <span>Fed. max</span>
+        <span id="lim1">$5,500</span>
+        <span id="lim2">$6,500</span>
+        <span id="lim3">$7,500</span>
+        <span id="lim4">$7,500</span>
+      </div>
+      <div class="year-input-row">
+        <label>Subsidized</label>
+        <input type="number" id="sub-y1" value="0" oninput="calcLoans()">
+        <input type="number" id="sub-y2" value="0" oninput="calcLoans()">
+        <input type="number" id="sub-y3" value="0" oninput="calcLoans()">
+        <input type="number" id="sub-y4" value="0" oninput="calcLoans()">
+      </div>
+      <div class="year-input-row">
+        <label>Unsubsidized</label>
+        <input type="number" id="unsub-y1" value="0" oninput="calcLoans()">
+        <input type="number" id="unsub-y2" value="0" oninput="calcLoans()">
+        <input type="number" id="unsub-y3" value="0" oninput="calcLoans()">
+        <input type="number" id="unsub-y4" value="0" oninput="calcLoans()">
+      </div>
+    </div>
+
+    <div class="year-inputs hidden" id="plus-inputs">
+      <div class="year-inputs-header">
+        <span>PLUS Loans</span>
+        <span>Yr 1</span><span>Yr 2</span><span>Yr 3</span><span>Yr 4</span>
+      </div>
+      <div class="year-input-row">
+        <label>Amount</label>
+        <input type="number" id="plus-y1" value="0" oninput="calcLoans()">
+        <input type="number" id="plus-y2" value="0" oninput="calcLoans()">
+        <input type="number" id="plus-y3" value="0" oninput="calcLoans()">
+        <input type="number" id="plus-y4" value="0" oninput="calcLoans()">
+      </div>
+    </div>
+
+    <p class="section-label">Assumptions</p>
+    <div class="assumption-row" id="rate-row-student">
+      <label>Interest rate</label>
+      <input type="number" id="loan-rate-student" value="6.39" step="0.01" oninput="calcLoans()">
+      <span class="rate-note">% (2025–26 fed. rate)</span>
+    </div>
+    <div class="assumption-row hidden" id="rate-row-plus">
+      <label>Interest rate</label>
+      <input type="number" id="loan-rate-plus" value="8.94" step="0.01" oninput="calcLoans()">
+      <span class="rate-note">% (2025–26 PLUS rate)</span>
+    </div>
+    <div class="assumption-row">
+      <label>Repayment term</label>
+      <input type="number" id="loan-term" value="10" oninput="calcLoans()">
+      <span class="rate-note">years (standard = 10)</span>
+    </div>
+
+    <!-- Loan Results -->
+    <div class="loan-results">
+      <div class="loan-results-header">Repayment Summary</div>
+      <div class="loan-result-row">
+        <span class="lbl">Total borrowed (4 years)</span>
+        <span class="val" id="l-total">$0</span>
+      </div>
+      <div class="loan-result-row hero-loan">
+        <span class="lbl">Monthly Payment</span>
+        <span class="val" id="l-monthly">$0</span>
+      </div>
+      <div class="loan-result-row">
+        <span class="lbl">Total paid over loan life</span>
+        <span class="val" id="l-totalpaid">$0</span>
+      </div>
+      <div class="loan-result-row wow-row">
+        <span class="lbl">Total interest paid ← most families never see this</span>
+        <span class="val" id="l-interest">$0</span>
+      </div>
+    </div>
+
+    <!-- Upsell -->
+    <div class="upsell-card">
+      <div class="upsell-eyebrow">Want to compare all loan types?</div>
+      <h3>The full spreadsheet includes every loan type side by side</h3>
+      <p>This free tool covers one loan type at a time. The full workbook lets you model student, Parent PLUS, and private loans together — plus compare costs across 8 schools.</p>
+      <div class="upsell-features">
+        <div class="upsell-feature"><span class="check">✓</span> Student, PLUS &amp; private loan tabs</div>
+        <div class="upsell-feature"><span class="check">✓</span> 8-school award letter comparison</div>
+        <div class="upsell-feature"><span class="check">✓</span> 4-year cost projection</div>
+        <div class="upsell-feature"><span class="check">✓</span> Plain-English loan type explainer</div>
+        <div class="upsell-feature"><span class="check">✓</span> Built by a college counselor</div>
+      </div>
+      <a class="upsell-btn" href="https://etsy.com" target="_blank">Get the Full Spreadsheet →</a>
+    </div>
+
+  </div><!-- /tab-loans -->
+
+</div><!-- /main -->
+
+<footer class="site-footer">
+  <strong>College Made Clear</strong><br>
+  Free tools for families navigating college costs.<br>
+  Rates: Federal Student Aid, 2025–26 academic year.
+</footer>
+
+<script>
+// ── UTILITIES ─────────────────────────────────────────────────
+function v(id) { return parseFloat(document.getElementById(id).value) || 0; }
+function fmt(n) {
+  if (n === 0) return '$0';
+  return '$' + Math.round(n).toLocaleString();
+}
+function set(id, val) { document.getElementById(id).textContent = val; }
+
+// ── TABS ──────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); });
+  document.querySelectorAll('.tab-btn').forEach(function(el) { el.classList.remove('active'); });
+  document.getElementById('tab-' + tab).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ── LOAN TYPE TOGGLE ──────────────────────────────────────────
+var currentLoanType = 'student';
+function setLoanType(type) {
+  currentLoanType = type;
+  document.querySelectorAll('.loan-type-btn').forEach(function(b) { b.classList.remove('active'); });
+  event.target.classList.add('active');
+  var isStudent = type === 'student';
+  document.getElementById('student-inputs').classList.toggle('hidden', !isStudent);
+  document.getElementById('plus-inputs').classList.toggle('hidden', isStudent);
+  document.getElementById('student-type-wrapper').classList.toggle('hidden', !isStudent);
+  document.getElementById('rate-row-student').classList.toggle('hidden', !isStudent);
+  document.getElementById('rate-row-plus').classList.toggle('hidden', isStudent);
+  calcLoans();
+}
+
+// ── DEPENDENT/INDEPENDENT LIMITS ─────────────────────────────
+var depLimits = [5500, 6500, 7500, 7500];
+var indLimits = [9500, 10500, 12500, 12500];
+function updateLimits() {
+  var isDep = document.getElementById('student-type').value === 'dependent';
+  var limits = isDep ? depLimits : indLimits;
+  for (var i = 1; i <= 4; i++) {
+    set('lim' + i, '$' + limits[i-1].toLocaleString());
+  }
+}
+
+// ── COMPARISON CALC ───────────────────────────────────────────
+function calcComparison() {
+  var s1 = document.getElementById('school1-name').value || 'School 1';
+  var s2 = document.getElementById('school2-name').value || 'School 2';
+  set('ch1', s1); set('ch2', s2);
+  set('hero-s1', s1); set('hero-s2', s2);
+
+  var fields = ['tuition','room','board','other'];
+  var freeFields = ['pell','state','inst','schol'];
+  var selfFields = ['loans','ws'];
+
+  var d1 = 0, d2 = 0;
+  fields.forEach(function(f) { d1 += v('c1-'+f); d2 += v('c2-'+f); });
+  var f1 = 0, f2 = 0;
+  freeFields.forEach(function(f) { f1 += v('c1-'+f); f2 += v('c2-'+f); });
+  var s1v = 0, s2v = 0;
+  selfFields.forEach(function(f) { s1v += v('c1-'+f); s2v += v('c2-'+f); });
+
+  var t1 = Math.max(0, d1 - f1);
+  var t2 = Math.max(0, d2 - f2);
+  var oop1 = Math.max(0, t1 - s1v);
+  var oop2 = Math.max(0, t2 - s2v);
+
+  set('r1-direct', fmt(d1)); set('r2-direct', fmt(d2));
+  set('r1-free', fmt(f1));   set('r2-free', fmt(f2));
+  set('r1-true', fmt(t1));   set('r2-true', fmt(t2));
+  set('r1-self', fmt(s1v));  set('r2-self', fmt(s2v));
+  set('r1-oop', fmt(oop1));  set('r2-oop', fmt(oop2));
+}
+
+// ── LOAN CALC ─────────────────────────────────────────────────
+function calcLoans() {
+  var total = 0;
+  if (currentLoanType === 'student') {
+    for (var i = 1; i <= 4; i++) {
+      total += v('sub-y' + i) + v('unsub-y' + i);
     }
-  }
-  // Total Direct Costs row 9
-  ws.setRowHeight(9, 22);
-  setCell(ws, 9, 1, "Total Direct Costs", {bg: C.purple, fc: C.white, bold: true});
-  ws.getRange(9,1).setIndent(1);
-  for (var col = 2; col <= 9; col++) {
-    var cl = colLetter(col);
-    ws.getRange(9, col).setFormula("=SUM("+cl+"5:"+cl+"8)")
-      .setBackground(C.purple).setFontColor(C.white).setFontWeight("bold")
-      .setHorizontalAlignment("right").setNumberFormat('"$"#,##0').setFontFamily("Arial");
-  }
-
-  spacerRow(ws, 10, 8);
-
-  // FREE MONEY
-  headerRow(ws, 11, "  FREE MONEY  —  does not need to be repaid", C.greenDark, C.white, 22);
-  var freeLabels = ["Pell Grant", "State Grants", "Institutional Grants / Scholarships", "Other Aid"];
-  for (var i = 0; i < freeLabels.length; i++) {
-    var r = 12 + i;
-    ws.setRowHeight(r, 20);
-    var bg = (i % 2 === 0) ? C.white : C.greenTint;
-    setCell(ws, r, 1, freeLabels[i], {bg: bg, fc: C.greyDark});
-    ws.getRange(r, 1).setIndent(1);
-    for (var col = 2; col <= 9; col++) {
-      ws.getRange(r, col).setBackground(bg).setFontColor(C.inputBlue).setFontFamily("Arial")
-        .setHorizontalAlignment("right").setNumberFormat('"$"#,##0').setValue(0);
-    }
-  }
-  ws.setRowHeight(16, 22);
-  setCell(ws, 16, 1, "Total Free Money", {bg: C.greenDark, fc: C.white, bold: true});
-  ws.getRange(16,1).setIndent(1);
-  for (var col = 2; col <= 9; col++) {
-    var cl = colLetter(col);
-    ws.getRange(16, col).setFormula("=SUM("+cl+"12:"+cl+"15)")
-      .setBackground(C.greenDark).setFontColor(C.white).setFontWeight("bold")
-      .setHorizontalAlignment("right").setNumberFormat('"$"#,##0').setFontFamily("Arial");
-  }
-
-  spacerRow(ws, 17, 8);
-
-  // TRUE COST HERO — rows 18-21
-  spacerRow(ws, 18, 10);
-  ws.setRowHeight(19, 36);
-  setCell(ws, 19, 1, "TRUE COST OF COLLEGE", {bg: C.purpleTint, fc: C.purpleDark, bold: true, size: 12});
-  ws.getRange(19,1).setIndent(2);
-  ws.getRange(19,1).setBorder(true,true,true,true,false,false, C.purple, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-  for (var col = 2; col <= 9; col++) {
-    var cl = colLetter(col);
-    ws.getRange(19, col).setFormula('=IF('+cl+'9=0,0,'+cl+'9-'+cl+'16)')
-      .setBackground(C.purpleTint).setFontColor(C.purpleDark).setFontWeight("bold").setFontSize(12)
-      .setHorizontalAlignment("right").setNumberFormat('"$"#,##0').setFontFamily("Arial");
-    ws.getRange(19, col).setBorder(true,true,true,true,false,false, C.purple, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-  }
-  ws.setRowHeight(20, 16);
-  ws.getRange(20,1,1,9).merge().setValue("  Direct Costs minus Free Money — this is what college actually costs your family")
-    .setFontColor(C.greyMid).setFontStyle("italic").setFontSize(9).setFontFamily("Arial").setBackground(C.white);
-  spacerRow(ws, 21, 14);
-
-  // SELF HELP
-  headerRow(ws, 22, "  SELF HELP  —  loans must be repaid; work-study must be earned", "#888888", C.white, 22);
-  var selfLabels = ["Loans (Subsidized + Unsubsidized)", "Work-Study", "Other Self Help"];
-  for (var i = 0; i < selfLabels.length; i++) {
-    var r = 23 + i;
-    ws.setRowHeight(r, 20);
-    var bg = (i % 2 === 0) ? C.white : C.greyLight;
-    setCell(ws, r, 1, selfLabels[i], {bg: bg, fc: C.greyDark});
-    ws.getRange(r, 1).setIndent(1);
-    for (var col = 2; col <= 9; col++) {
-      ws.getRange(r, col).setBackground(bg).setFontColor(C.inputBlue).setFontFamily("Arial")
-        .setHorizontalAlignment("right").setNumberFormat('"$"#,##0').setValue(0);
-    }
-  }
-  ws.setRowHeight(26, 22);
-  setCell(ws, 26, 1, "Total Self Help", {bg: "#888888", fc: C.white, bold: true});
-  ws.getRange(26,1).setIndent(1);
-  for (var col = 2; col <= 9; col++) {
-    var cl = colLetter(col);
-    ws.getRange(26, col).setFormula("=SUM("+cl+"23:"+cl+"25)")
-      .setBackground("#888888").setFontColor(C.white).setFontWeight("bold")
-      .setHorizontalAlignment("right").setNumberFormat('"$"#,##0').setFontFamily("Arial");
-  }
-
-  spacerRow(ws, 27, 8);
-
-  // Out of pocket
-  ws.setRowHeight(28, 22);
-  setCell(ws, 28, 1, "Out of Pocket After Self Help", {bg: C.greyLight, fc: C.greyDark, bold: true});
-  ws.getRange(28,1).setIndent(1);
-  for (var col = 2; col <= 9; col++) {
-    var cl = colLetter(col);
-    ws.getRange(28, col).setFormula('=IF('+cl+'9=0,0,'+cl+'9-'+cl+'16-'+cl+'26)')
-      .setBackground(C.greyLight).setFontColor(C.greyDark).setFontWeight("bold")
-      .setHorizontalAlignment("right").setNumberFormat('"$"#,##0').setFontFamily("Arial");
-  }
-
-  spacerRow(ws, 29, 8);
-
-  // Footnote
-  ws.setRowHeight(30, 16);
-  ws.getRange(30,1,1,9).merge()
-    .setValue("Blue cells = enter your data  |  TRUE COST = Direct Costs minus Free Money  |  College Made Clear  •  collegemadeclear.com")
-    .setFontColor(C.greyMid).setFontStyle("italic").setFontSize(8).setHorizontalAlignment("center").setFontFamily("Arial");
-
-  // Sample data col B
-  ws.getRange(2,2).setValue("Sample School");
-  var sampleDirect = [55000, 9000, 3000, 0];
-  for (var i = 0; i < sampleDirect.length; i++) ws.getRange(5+i, 2).setValue(sampleDirect[i]);
-  var sampleFree = [0, 9000, 20000, 0];
-  for (var i = 0; i < sampleFree.length; i++) ws.getRange(12+i, 2).setValue(sampleFree[i]);
-  var sampleSelf = [7000, 1500, 0];
-  for (var i = 0; i < sampleSelf.length; i++) ws.getRange(23+i, 2).setValue(sampleSelf[i]);
-}
-
-// ── TAB 2: 4-YEAR PROJECTION ──────────────────────────────────
-function buildProjection(ss) {
-  var ws = ss.insertSheet("4-Year Projection", 1);
-  ws.setColumnWidth(1, 220);
-  for (var c = 2; c <= 9; c++) ws.setColumnWidth(c, 115);
-
-  ws.setRowHeight(1, 38);
-  ws.getRange(1,1,1,9).merge().setValue("4-Year Cost Projection")
-    .setBackground(C.purpleDark).setFontColor(C.white).setFontWeight("bold").setFontSize(14)
-    .setHorizontalAlignment("center").setVerticalAlignment("middle").setFontFamily("Arial");
-
-  // Assumption
-  ws.setRowHeight(2, 28);
-  ws.getRange(2,1,1,3).merge().setValue("Annual cost increase assumption:")
-    .setFontColor(C.greyDark).setFontWeight("bold").setHorizontalAlignment("right")
-    .setVerticalAlignment("middle").setFontFamily("Arial");
-  inputCell(ws, 2, 4, 0.03, "0.0%");
-  ws.getRange(2,5,1,5).merge().setValue("← Enter your assumption here (e.g. 3% = typical annual increase)")
-    .setFontColor(C.greyMid).setFontStyle("italic").setFontSize(9).setFontFamily("Arial");
-
-  ws.setRowHeight(3, 28);
-  ws.getRange(3,1,1,9).merge()
-    .setValue("School names and Year 1 costs pull automatically from the Comparison tab. Years 2–4 apply your assumed annual increase.")
-    .setBackground(C.greyLight).setFontColor(C.greyMid).setFontStyle("italic").setFontSize(9)
-    .setWrap(true).setFontFamily("Arial");
-
-  spacerRow(ws, 4, 8);
-
-  // School headers row 5
-  ws.setRowHeight(5, 40);
-  ws.getRange(5,1).setBackground(C.purple).setFontFamily("Arial");
-  for (var col = 2; col <= 9; col++) {
-    ws.getRange(5, col).setFormula("=Comparison!"+colLetter(col)+"2")
-      .setBackground(C.purple).setFontColor(C.white).setFontWeight("bold").setFontSize(10)
-      .setHorizontalAlignment("center").setVerticalAlignment("middle").setWrap(true).setFontFamily("Arial");
-  }
-
-  var RATE = "$D$2";
-  var yearBlocks = [
-    {hRow:6,  tcRow:7,  oopRow:8,  label:"YEAR 1", yr1:true},
-    {hRow:10, tcRow:11, oopRow:12, label:"YEAR 2", yr1:false, srcTc:7,  srcOop:8},
-    {hRow:14, tcRow:15, oopRow:16, label:"YEAR 3", yr1:false, srcTc:11, srcOop:12},
-    {hRow:18, tcRow:19, oopRow:20, label:"YEAR 4", yr1:false, srcTc:15, srcOop:16},
-  ];
-
-  yearBlocks.forEach(function(blk) {
-    spacerRow(ws, blk.hRow - (blk.hRow === 6 ? 0 : 1), blk.hRow === 6 ? 0 : 10);
-    headerRow(ws, blk.hRow, "  " + blk.label, C.purpleDark, C.white, 22);
-
-    // True cost row
-    ws.setRowHeight(blk.tcRow, 28);
-    ws.getRange(blk.tcRow, 1).setValue("True Cost of College")
-      .setBackground(C.purpleTint).setFontColor(C.purpleDark).setFontWeight("bold").setFontSize(11)
-      .setVerticalAlignment("middle").setFontFamily("Arial").setIndent(2);
-    ws.getRange(blk.tcRow, 1).setBorder(true,true,true,true,false,false, C.purple, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-    for (var col = 2; col <= 9; col++) {
-      var cl = colLetter(col);
-      var f = blk.yr1
-        ? "=IF(Comparison!"+cl+"9=0,0,Comparison!"+cl+"19)"
-        : "=IF("+cl+blk.srcTc+'=0,0,'+cl+blk.srcTc+'*(1+'+RATE+'))';
-      ws.getRange(blk.tcRow, col).setFormula(f)
-        .setBackground(C.purpleTint).setFontColor(C.purpleDark).setFontWeight("bold").setFontSize(11)
-        .setHorizontalAlignment("right").setNumberFormat('"$"#,##0').setFontFamily("Arial");
-      ws.getRange(blk.tcRow, col).setBorder(true,true,true,true,false,false, C.purple, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-    }
-
-    // OOP row
-    ws.setRowHeight(blk.oopRow, 20);
-    ws.getRange(blk.oopRow, 1).setValue("Out of Pocket After Self Help")
-      .setBackground(C.greyLight).setFontColor(C.greyMid).setFontFamily("Arial").setIndent(2);
-    for (var col = 2; col <= 9; col++) {
-      var cl = colLetter(col);
-      var f = blk.yr1
-        ? "=IF(Comparison!"+cl+"9=0,0,Comparison!"+cl+"28)"
-        : "=IF("+cl+blk.srcOop+'=0,0,'+cl+blk.srcOop+'*(1+'+RATE+'))';
-      ws.getRange(blk.oopRow, col).setFormula(f)
-        .setBackground(C.greyLight).setFontColor(C.greyMid)
-        .setHorizontalAlignment("right").setNumberFormat('"$"#,##0').setFontFamily("Arial");
-    }
-  });
-
-  spacerRow(ws, 21, 10);
-
-  // 4-year totals
-  headerRow(ws, 22, "  4-YEAR TOTALS", C.purpleDark, C.white, 22);
-  ws.setRowHeight(23, 28);
-  ws.getRange(23,1).setValue("Total True Cost (4 Years)")
-    .setBackground(C.purpleTint).setFontColor(C.purpleDark).setFontWeight("bold").setFontSize(12)
-    .setVerticalAlignment("middle").setFontFamily("Arial").setIndent(2);
-  ws.getRange(23,1).setBorder(true,true,true,true,false,false, C.purple, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-  for (var col = 2; col <= 9; col++) {
-    var cl = colLetter(col);
-    ws.getRange(23, col).setFormula("="+cl+"7+"+cl+"11+"+cl+"15+"+cl+"19")
-      .setBackground(C.purpleTint).setFontColor(C.purpleDark).setFontWeight("bold").setFontSize(12)
-      .setHorizontalAlignment("right").setNumberFormat('"$"#,##0').setFontFamily("Arial");
-    ws.getRange(23, col).setBorder(true,true,true,true,false,false, C.purple, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-  }
-
-  ws.setRowHeight(24, 22);
-  ws.getRange(24,1).setValue("Total Out of Pocket (4 Years)")
-    .setBackground(C.greyLight).setFontColor(C.greyDark).setFontWeight("bold").setFontFamily("Arial").setIndent(2);
-  for (var col = 2; col <= 9; col++) {
-    var cl = colLetter(col);
-    ws.getRange(24, col).setFormula("="+cl+"8+"+cl+"12+"+cl+"16+"+cl+"20")
-      .setBackground(C.greyLight).setFontColor(C.greyDark).setFontWeight("bold")
-      .setHorizontalAlignment("right").setNumberFormat('"$"#,##0').setFontFamily("Arial");
-  }
-
-  spacerRow(ws, 25, 8);
-  ws.setRowHeight(26, 16);
-  ws.getRange(26,1,1,9).merge()
-    .setValue("Projection applies your assumed annual increase to all cost components. Actual costs will vary.  |  College Made Clear  •  collegemadeclear.com")
-    .setFontColor(C.greyMid).setFontStyle("italic").setFontSize(8).setHorizontalAlignment("center").setFontFamily("Arial");
-}
-
-// ── LOAN TAB BUILDER (shared by student + parent) ─────────────
-function buildLoanTab(ss, tabName, tabIndex, isParent) {
-  var ws = ss.insertSheet(tabName, tabIndex);
-  ws.setColumnWidth(1, 240);
-  for (var c = 2; c <= 5; c++) ws.setColumnWidth(c, 140);
-
-  var title = isParent ? "Parent PLUS Loan Projector" : "Student Loan Projector";
-  var subtitle = isParent
-    ? "Parent PLUS loans are the parent's responsibility — not the student's. Enter the amount borrowed per year to see the true repayment cost."
-    : "Federal student loans seem manageable per year — but they add up. Enter the amount borrowed each year to see what repayment really looks like.";
-
-  ws.setRowHeight(1, 38);
-  ws.getRange(1,1,1,5).merge().setValue(title)
-    .setBackground(C.purpleDark).setFontColor(C.white).setFontWeight("bold").setFontSize(14)
-    .setHorizontalAlignment("center").setVerticalAlignment("middle").setFontFamily("Arial");
-
-  ws.setRowHeight(2, 36);
-  ws.getRange(2,1,1,5).merge().setValue(subtitle)
-    .setBackground(C.greyLight).setFontColor(C.greyMid).setFontStyle("italic").setFontSize(9)
-    .setWrap(true).setFontFamily("Arial");
-
-  spacerRow(ws, 3, 8);
-
-  var nextRow = 4;
-
-  // Student type dropdown (student only)
-  if (!isParent) {
-    ws.setRowHeight(nextRow, 26);
-    ws.getRange(nextRow, 1).setValue("Student Type")
-      .setBackground(C.greyLight).setFontColor(C.greyDark).setFontWeight("bold")
-      .setVerticalAlignment("middle").setFontFamily("Arial").setIndent(1);
-    inputCell(ws, nextRow, 2, "Dependent", "@");
-    var rule = SpreadsheetApp.newDataValidation()
-      .requireValueInList(["Dependent","Independent"], true).build();
-    ws.getRange(nextRow, 2).setDataValidation(rule);
-    ws.getRange(nextRow, 3, 1, 3).merge()
-      .setValue("← Dependent = under 24, unmarried, no dependents.  Independent = 24+, married, veteran, or grad student.")
-      .setFontColor(C.greyMid).setFontStyle("italic").setFontSize(9).setWrap(true).setFontFamily("Arial")
-      .setBackground(C.greyLight);
-    nextRow++;
-    spacerRow(ws, nextRow, 6); nextRow++;
-  }
-
-  // Assumptions header
-  ws.getRange(nextRow,1,1,5).merge().setValue("  ASSUMPTIONS  —  you can change the rates in the blue cells")
-    .setBackground(C.purpleDark).setFontColor(C.white).setFontWeight("bold").setFontSize(10)
-    .setVerticalAlignment("middle").setFontFamily("Arial");
-  ws.setRowHeight(nextRow, 22); nextRow++;
-
-  var RATE_ROW_SUB, RATE_ROW_UNSUB, RATE_ROW_PLUS, TERM_ROW;
-
-  if (!isParent) {
-    // Sub rate
-    ws.setRowHeight(nextRow, 22);
-    ws.getRange(nextRow,1).setValue("Subsidized Loan Interest Rate (2025–26)")
-      .setBackground(C.white).setFontColor(C.greyDark).setVerticalAlignment("middle").setFontFamily("Arial").setIndent(1);
-    inputCell(ws, nextRow, 2, 0.0639, "0.00%");
-    ws.getRange(nextRow,3,1,3).merge().setValue("← Current federal rate. You may update this cell.")
-      .setFontColor(C.greyMid).setFontStyle("italic").setFontSize(9).setFontFamily("Arial");
-    RATE_ROW_SUB = nextRow; nextRow++;
-
-    // Unsub rate
-    ws.setRowHeight(nextRow, 22);
-    ws.getRange(nextRow,1).setValue("Unsubsidized Loan Interest Rate (2025–26)")
-      .setBackground(C.greyLight).setFontColor(C.greyDark).setVerticalAlignment("middle").setFontFamily("Arial").setIndent(1);
-    inputCell(ws, nextRow, 2, 0.0639, "0.00%");
-    ws.getRange(nextRow,3,1,3).merge().setValue("← Same as subsidized for undergrad in 2025–26. Interest accrues immediately.")
-      .setFontColor(C.greyMid).setFontStyle("italic").setFontSize(9).setFontFamily("Arial").setBackground(C.greyLight);
-    RATE_ROW_UNSUB = nextRow; nextRow++;
-
-    // Term
-    ws.setRowHeight(nextRow, 22);
-    ws.getRange(nextRow,1).setValue("Repayment Term (years)")
-      .setBackground(C.white).setFontColor(C.greyDark).setVerticalAlignment("middle").setFontFamily("Arial").setIndent(1);
-    inputCell(ws, nextRow, 2, 10, "0");
-    ws.getRange(nextRow,3,1,3).merge().setValue("← Standard is 10 years. Change to see impact of longer repayment.")
-      .setFontColor(C.greyMid).setFontStyle("italic").setFontSize(9).setFontFamily("Arial");
-    TERM_ROW = nextRow; nextRow++;
-
   } else {
-    // PLUS rate
-    ws.setRowHeight(nextRow, 22);
-    ws.getRange(nextRow,1).setValue("Parent PLUS Loan Interest Rate (2025–26)")
-      .setBackground(C.white).setFontColor(C.greyDark).setVerticalAlignment("middle").setFontFamily("Arial").setIndent(1);
-    inputCell(ws, nextRow, 2, 0.0894, "0.00%");
-    ws.getRange(nextRow,3,1,3).merge().setValue("← Current federal rate. You may update this cell.")
-      .setFontColor(C.greyMid).setFontStyle("italic").setFontSize(9).setFontFamily("Arial");
-    RATE_ROW_PLUS = nextRow; nextRow++;
-
-    ws.setRowHeight(nextRow, 22);
-    ws.getRange(nextRow,1).setValue("Repayment Term (years)")
-      .setBackground(C.greyLight).setFontColor(C.greyDark).setVerticalAlignment("middle").setFontFamily("Arial").setIndent(1);
-    inputCell(ws, nextRow, 2, 10, "0");
-    ws.getRange(nextRow,3,1,3).merge().setValue("← Standard is 10 years. Change to see impact of longer repayment.")
-      .setFontColor(C.greyMid).setFontStyle("italic").setFontSize(9).setFontFamily("Arial").setBackground(C.greyLight);
-    TERM_ROW = nextRow; nextRow++;
-  }
-
-  spacerRow(ws, nextRow, 10); nextRow++;
-
-  // Amount borrowed section
-  ws.getRange(nextRow,1,1,5).merge().setValue("  AMOUNT BORROWED PER YEAR  —  enter in blue cells")
-    .setBackground(C.purpleDark).setFontColor(C.white).setFontWeight("bold").setFontSize(10)
-    .setVerticalAlignment("middle").setFontFamily("Arial");
-  ws.setRowHeight(nextRow, 22); nextRow++;
-
-  // Year headers
-  ws.setRowHeight(nextRow, 28);
-  ws.getRange(nextRow,1).setBackground(C.purple).setFontFamily("Arial");
-  ["Year 1","Year 2","Year 3","Year 4"].forEach(function(lbl, i) {
-    ws.getRange(nextRow, i+2).setValue(lbl).setBackground(C.purple).setFontColor(C.white)
-      .setFontWeight("bold").setHorizontalAlignment("center").setVerticalAlignment("middle").setFontFamily("Arial");
-  });
-  var YR_HDR_ROW = nextRow; nextRow++;
-
-  // Limit row (student only)
-  var LIMIT_ROW, SUB_ROW, UNSUB_ROW, PLUS_ROW, TOTAL_ROW_INPUT;
-  if (!isParent) {
-    ws.setRowHeight(nextRow, 22);
-    ws.getRange(nextRow,1).setValue("Federal annual maximum")
-      .setBackground(C.amberTint).setFontColor(C.amberText).setFontStyle("italic").setFontSize(9)
-      .setVerticalAlignment("middle").setFontFamily("Arial").setIndent(1);
-    var studentTypeRef = "$B$" + 4; // row 4 = student type dropdown
-    var limitFormulas = [
-      '=IF($B$4="Dependent",5500,9500)',
-      '=IF($B$4="Dependent",6500,10500)',
-      '=IF($B$4="Dependent",7500,12500)',
-      '=IF($B$4="Dependent",7500,12500)'
-    ];
-    limitFormulas.forEach(function(f, i) {
-      ws.getRange(nextRow, i+2).setFormula(f)
-        .setBackground(C.amberTint).setFontColor(C.amberText).setFontWeight("bold").setFontSize(9)
-        .setHorizontalAlignment("center").setNumberFormat('"max  $"#,##0').setFontFamily("Arial");
-    });
-    LIMIT_ROW = nextRow; nextRow++;
-  }
-
-  // Input rows
-  if (!isParent) {
-    ws.setRowHeight(nextRow, 22);
-    ws.getRange(nextRow,1).setValue("Subsidized Loans Borrowed")
-      .setBackground(C.white).setFontColor(C.greyDark).setVerticalAlignment("middle").setFontFamily("Arial").setIndent(1);
-    for (var c = 2; c <= 5; c++) ws.getRange(nextRow,c).setValue(0).setFontColor(C.inputBlue)
-      .setBackground(C.white).setHorizontalAlignment("right").setNumberFormat('"$"#,##0').setFontFamily("Arial");
-    SUB_ROW = nextRow; nextRow++;
-
-    ws.setRowHeight(nextRow, 22);
-    ws.getRange(nextRow,1).setValue("Unsubsidized Loans Borrowed")
-      .setBackground(C.greyLight).setFontColor(C.greyDark).setVerticalAlignment("middle").setFontFamily("Arial").setIndent(1);
-    for (var c = 2; c <= 5; c++) ws.getRange(nextRow,c).setValue(0).setFontColor(C.inputBlue)
-      .setBackground(C.greyLight).setHorizontalAlignment("right").setNumberFormat('"$"#,##0').setFontFamily("Arial");
-    UNSUB_ROW = nextRow; nextRow++;
-
-  } else {
-    ws.setRowHeight(nextRow, 22);
-    ws.getRange(nextRow,1).setValue("Parent PLUS Loans Borrowed")
-      .setBackground(C.white).setFontColor(C.greyDark).setVerticalAlignment("middle").setFontFamily("Arial").setIndent(1);
-    for (var c = 2; c <= 5; c++) ws.getRange(nextRow,c).setValue(0).setFontColor(C.inputBlue)
-      .setBackground(C.white).setHorizontalAlignment("right").setNumberFormat('"$"#,##0').setFontFamily("Arial");
-    PLUS_ROW = nextRow; nextRow++;
-  }
-
-  // Total per year row
-  ws.setRowHeight(nextRow, 22);
-  ws.getRange(nextRow,1).setValue("Total Borrowed Per Year")
-    .setBackground(C.purple).setFontColor(C.white).setFontWeight("bold").setVerticalAlignment("middle").setFontFamily("Arial").setIndent(1);
-  for (var c = 2; c <= 5; c++) {
-    var cl = colLetter(c);
-    var f = isParent ? "="+cl+PLUS_ROW : "="+cl+SUB_ROW+"+"+cl+UNSUB_ROW;
-    ws.getRange(nextRow,c).setFormula(f).setBackground(C.purple).setFontColor(C.white).setFontWeight("bold")
-      .setHorizontalAlignment("right").setNumberFormat('"$"#,##0').setFontFamily("Arial");
-  }
-  TOTAL_ROW_INPUT = nextRow; nextRow++;
-
-  spacerRow(ws, nextRow, 10); nextRow++;
-
-  // Repayment summary
-  ws.getRange(nextRow,1,1,5).merge().setValue("  REPAYMENT SUMMARY  —  after graduation")
-    .setBackground(C.purpleDark).setFontColor(C.white).setFontWeight("bold").setFontSize(10)
-    .setVerticalAlignment("middle").setFontFamily("Arial");
-  ws.setRowHeight(nextRow, 22); nextRow++;
-
-  // Total borrowed
-  ws.setRowHeight(nextRow, 22);
-  ws.getRange(nextRow,1).setValue("Total Amount Borrowed (all 4 years)")
-    .setBackground(C.white).setFontColor(C.greyDark).setVerticalAlignment("middle").setFontFamily("Arial").setIndent(1);
-  var totalFormula = "=SUM(B"+TOTAL_ROW_INPUT+":E"+TOTAL_ROW_INPUT+")";
-  ws.getRange(nextRow,2,1,4).merge().setFormula(totalFormula)
-    .setBackground(C.white).setFontColor(C.greyDark).setFontWeight("bold")
-    .setHorizontalAlignment("center").setNumberFormat('"$"#,##0').setFontFamily("Arial");
-  var TOTAL_BORROWED_ROW = nextRow; nextRow++;
-
-  // Monthly hero
-  var pmt;
-  if (!isParent) {
-    pmt = "=IF(B"+TOTAL_BORROWED_ROW+"=0,0,PMT((IF(SUM(B"+SUB_ROW+":E"+SUB_ROW+")=0,0,SUM(B"+SUB_ROW+":E"+SUB_ROW+")*$B$"+RATE_ROW_SUB+")+IF(SUM(B"+UNSUB_ROW+":E"+UNSUB_ROW+")=0,0,SUM(B"+UNSUB_ROW+":E"+UNSUB_ROW+")*$B$"+RATE_ROW_UNSUB+"))/B"+TOTAL_BORROWED_ROW+"/12,$B$"+TERM_ROW+"*12,-B"+TOTAL_BORROWED_ROW+"))";
-  } else {
-    pmt = "=IF(B"+TOTAL_BORROWED_ROW+"=0,0,PMT($B$"+RATE_ROW_PLUS+"/12,$B$"+TERM_ROW+"*12,-B"+TOTAL_BORROWED_ROW+"))";
-  }
-  heroCell(ws, nextRow, 1, pmt, 4);
-  var MONTHLY_ROW = nextRow; nextRow++;
-
-  // Total paid
-  ws.setRowHeight(nextRow, 22);
-  ws.getRange(nextRow,1).setValue("Total Paid Over Life of Loan")
-    .setBackground(C.greyLight).setFontColor(C.greyDark).setVerticalAlignment("middle").setFontFamily("Arial").setIndent(1);
-  ws.getRange(nextRow,2,1,4).merge().setFormula("=IF(B"+TOTAL_BORROWED_ROW+"=0,0,B"+MONTHLY_ROW+"*$B$"+TERM_ROW+"*12)")
-    .setBackground(C.greyLight).setFontColor(C.greyDark).setHorizontalAlignment("center")
-    .setNumberFormat('"$"#,##0').setFontFamily("Arial");
-  var TOTAL_PAID_ROW = nextRow; nextRow++;
-
-  // Wow row
-  wowCell(ws, nextRow, "=IF(B"+TOTAL_BORROWED_ROW+"=0,0,B"+TOTAL_PAID_ROW+"-B"+TOTAL_BORROWED_ROW+")", null, 4);
-  var INTEREST_ROW = nextRow; nextRow++;
-
-  spacerRow(ws, nextRow, 10); nextRow++;
-
-  // What if faster
-  ws.getRange(nextRow,1,1,5).merge().setValue("  WHAT IF YOU PAID IT OFF FASTER?  —  change the term above to see")
-    .setBackground(C.greenDark).setFontColor(C.white).setFontWeight("bold").setFontSize(10)
-    .setVerticalAlignment("middle").setFontFamily("Arial");
-  ws.setRowHeight(nextRow, 22); nextRow++;
-
-  [[10,C.white],[15,C.greyLight],[20,C.white]].forEach(function(pair) {
-    var yrs = pair[0], bg = pair[1];
-    ws.setRowHeight(nextRow, 22);
-    ws.getRange(nextRow,1).setValue(yrs+"-year repayment")
-      .setBackground(bg).setFontColor(C.greyDark).setVerticalAlignment("middle").setFontFamily("Arial").setIndent(1);
-    var pmt_s;
-    if (!isParent) {
-      pmt_s = "=IF(B"+TOTAL_BORROWED_ROW+"=0,0,PMT((IF(SUM(B"+SUB_ROW+":E"+SUB_ROW+")=0,0,SUM(B"+SUB_ROW+":E"+SUB_ROW+")*$B$"+RATE_ROW_SUB+")+IF(SUM(B"+UNSUB_ROW+":E"+UNSUB_ROW+")=0,0,SUM(B"+UNSUB_ROW+":E"+UNSUB_ROW+")*$B$"+RATE_ROW_UNSUB+"))/B"+TOTAL_BORROWED_ROW+"/12,"+yrs+"*12,-B"+TOTAL_BORROWED_ROW+"))";
-    } else {
-      pmt_s = "=IF(B"+TOTAL_BORROWED_ROW+"=0,0,PMT($B$"+RATE_ROW_PLUS+"/12,"+yrs+"*12,-B"+TOTAL_BORROWED_ROW+"))";
+    for (var i = 1; i <= 4; i++) {
+      total += v('plus-y' + i);
     }
-    ws.getRange(nextRow,2).setFormula(pmt_s).setBackground(bg).setFontColor(C.greyDark)
-      .setHorizontalAlignment("right").setNumberFormat('"$"#,##0').setFontFamily("Arial");
-    ws.getRange(nextRow,3).setValue("/ month").setBackground(bg).setFontColor(C.greyMid)
-      .setFontStyle("italic").setFontSize(9).setFontFamily("Arial");
-    ws.getRange(nextRow,4).setFormula("=IF(B"+TOTAL_BORROWED_ROW+"=0,0,B"+nextRow+"*"+yrs+"*12-B"+TOTAL_BORROWED_ROW+")")
-      .setBackground(bg).setFontColor(C.orangeText).setHorizontalAlignment("right")
-      .setNumberFormat('"$"#,##0').setFontFamily("Arial");
-    ws.getRange(nextRow,5).setValue("total interest paid").setBackground(bg).setFontColor(C.greyMid)
-      .setFontStyle("italic").setFontSize(9).setFontFamily("Arial");
-    nextRow++;
-  });
+  }
 
-  spacerRow(ws, nextRow, 8); nextRow++;
+  var rateId = currentLoanType === 'student' ? 'loan-rate-student' : 'loan-rate-plus';
+  var rate = (parseFloat(document.getElementById(rateId).value) || 0) / 100;
+  var term = v('loan-term') || 10;
+  var monthlyRate = rate / 12;
+  var n = term * 12;
 
-  // Footnote
-  ws.setRowHeight(nextRow, 28);
-  var fnote = isParent
-    ? "Rates: Federal Student Aid (studentaid.gov), 2025–26.  Parent PLUS loans begin repayment 60 days after disbursement unless deferred.  College Made Clear  •  collegemadeclear.com"
-    : "Rates: Federal Student Aid (studentaid.gov), 2025–26.  Dependent limits: Yr1 $5,500 / Yr2 $6,500 / Yr3–4 $7,500.  Independent limits: Yr1 $9,500 / Yr2 $10,500 / Yr3–4 $12,500.  College Made Clear  •  collegemadeclear.com";
-  ws.getRange(nextRow,1,1,5).merge().setValue(fnote)
-    .setFontColor(C.greyMid).setFontStyle("italic").setFontSize(8)
-    .setHorizontalAlignment("center").setWrap(true).setFontFamily("Arial");
+  var monthly = 0;
+  if (total > 0 && rate > 0) {
+    monthly = total * (monthlyRate * Math.pow(1 + monthlyRate, n)) / (Math.pow(1 + monthlyRate, n) - 1);
+  } else if (total > 0) {
+    monthly = total / n;
+  }
+
+  var totalPaid = monthly * n;
+  var interest = totalPaid - total;
+
+  set('l-total', fmt(total));
+  set('l-monthly', fmt(monthly));
+  set('l-totalpaid', fmt(totalPaid));
+  set('l-interest', fmt(Math.max(0, interest)));
 }
 
-function buildStudentLoans(ss) { buildLoanTab(ss, "Student Loans", 2, false); }
-function buildParentPLUS(ss)   { buildLoanTab(ss, "Parent PLUS Loans", 3, true); }
-
-// ── TAB 5: PRIVATE LOANS ──────────────────────────────────────
-function buildPrivateLoans(ss) {
-  var ws = ss.insertSheet("Private Loans", 4);
-  ws.setColumnWidth(1, 240);
-  for (var c = 2; c <= 5; c++) ws.setColumnWidth(c, 140);
-
-  ws.setRowHeight(1, 38);
-  ws.getRange(1,1,1,5).merge().setValue("Private Loan Projector")
-    .setBackground(C.purpleDark).setFontColor(C.white).setFontWeight("bold").setFontSize(14)
-    .setHorizontalAlignment("center").setVerticalAlignment("middle").setFontFamily("Arial");
-
-  ws.setRowHeight(2, 40);
-  ws.getRange(2,1,1,5).merge()
-    .setValue("⚠  Always exhaust federal loan options first.  Private loans have no income-driven repayment, no forgiveness programs, and variable rates that can increase over time.")
-    .setBackground(C.redTint).setFontColor(C.redText).setFontWeight("bold").setFontSize(9)
-    .setWrap(true).setFontFamily("Arial");
-
-  spacerRow(ws, 3, 8);
-
-  ws.setRowHeight(4, 44);
-  ws.getRange(4,1,1,5).merge()
-    .setValue("Private loan rates depend on credit score and cosigner — you won't know your actual rate until you apply.  Enter the amount borrowed each year and the rate you were quoted to see what repayment really looks like.")
-    .setBackground(C.greyLight).setFontColor(C.greyDark).setFontSize(9).setWrap(true).setFontFamily("Arial");
-
-  spacerRow(ws, 5, 10);
-
-  ws.getRange(6,1,1,5).merge().setValue("  ASSUMPTIONS  —  enter in blue cells")
-    .setBackground(C.purpleDark).setFontColor(C.white).setFontWeight("bold").setFontSize(10)
-    .setVerticalAlignment("middle").setFontFamily("Arial");
-  ws.setRowHeight(6, 22);
-
-  ws.setRowHeight(7, 22);
-  ws.getRange(7,1).setValue("Interest Rate  (enter the rate you were quoted)")
-    .setBackground(C.white).setFontColor(C.greyDark).setVerticalAlignment("middle").setFontFamily("Arial").setIndent(1);
-  inputCell(ws, 7, 2, 0.08, "0.00%");
-  ws.getRange(7,3,1,3).merge().setValue("← Private rates typically range from 4%–16% depending on credit")
-    .setFontColor(C.greyMid).setFontStyle("italic").setFontSize(9).setFontFamily("Arial");
-
-  ws.setRowHeight(8, 22);
-  ws.getRange(8,1).setValue("Repayment Term (years)")
-    .setBackground(C.greyLight).setFontColor(C.greyDark).setVerticalAlignment("middle").setFontFamily("Arial").setIndent(1);
-  inputCell(ws, 8, 2, 10, "0");
-  ws.getRange(8,3,1,3).merge().setValue("← Standard is 10 years. Change to see impact of longer repayment.")
-    .setFontColor(C.greyMid).setFontStyle("italic").setFontSize(9).setFontFamily("Arial").setBackground(C.greyLight);
-
-  spacerRow(ws, 9, 10);
-
-  ws.getRange(10,1,1,5).merge().setValue("  AMOUNT BORROWED PER YEAR  —  enter in blue cells")
-    .setBackground(C.purpleDark).setFontColor(C.white).setFontWeight("bold").setFontSize(10)
-    .setVerticalAlignment("middle").setFontFamily("Arial");
-  ws.setRowHeight(10, 22);
-
-  ws.setRowHeight(11, 28);
-  ws.getRange(11,1).setBackground(C.purple).setFontFamily("Arial");
-  ["Year 1","Year 2","Year 3","Year 4"].forEach(function(lbl, i) {
-    ws.getRange(11, i+2).setValue(lbl).setBackground(C.purple).setFontColor(C.white)
-      .setFontWeight("bold").setHorizontalAlignment("center").setVerticalAlignment("middle").setFontFamily("Arial");
-  });
-
-  ws.setRowHeight(12, 22);
-  ws.getRange(12,1).setValue("Private Loans Borrowed")
-    .setBackground(C.white).setFontColor(C.greyDark).setVerticalAlignment("middle").setFontFamily("Arial").setIndent(1);
-  for (var c = 2; c <= 5; c++) ws.getRange(12,c).setValue(0).setFontColor(C.inputBlue)
-    .setBackground(C.white).setHorizontalAlignment("right").setNumberFormat('"$"#,##0').setFontFamily("Arial");
-
-  spacerRow(ws, 13, 10);
-
-  ws.getRange(14,1,1,5).merge().setValue("  REPAYMENT SUMMARY  —  after graduation")
-    .setBackground(C.purpleDark).setFontColor(C.white).setFontWeight("bold").setFontSize(10)
-    .setVerticalAlignment("middle").setFontFamily("Arial");
-  ws.setRowHeight(14, 22);
-
-  ws.setRowHeight(15, 22);
-  ws.getRange(15,1).setValue("Total Amount Borrowed (all 4 years)")
-    .setBackground(C.white).setFontColor(C.greyDark).setVerticalAlignment("middle").setFontFamily("Arial").setIndent(1);
-  ws.getRange(15,2,1,4).merge().setFormula("=SUM(B12:E12)")
-    .setBackground(C.white).setFontColor(C.greyDark).setFontWeight("bold")
-    .setHorizontalAlignment("center").setNumberFormat('"$"#,##0').setFontFamily("Arial");
-
-  heroCell(ws, 16, 1, "=IF(B15=0,0,PMT($B$7/12,$B$8*12,-B15))", 4);
-
-  ws.setRowHeight(17, 22);
-  ws.getRange(17,1).setValue("Total Paid Over Life of Loan")
-    .setBackground(C.greyLight).setFontColor(C.greyDark).setVerticalAlignment("middle").setFontFamily("Arial").setIndent(1);
-  ws.getRange(17,2,1,4).merge().setFormula("=IF(B15=0,0,B16*$B$8*12)")
-    .setBackground(C.greyLight).setFontColor(C.greyDark).setHorizontalAlignment("center")
-    .setNumberFormat('"$"#,##0').setFontFamily("Arial");
-
-  wowCell(ws, 18, "=IF(B15=0,0,B17-B15)", "Total Interest Paid  ← the number that changes minds", 4);
-
-  ws.setRowHeight(19, 22);
-  ws.getRange(19,1).setValue("Interest as % of Amount Borrowed")
-    .setBackground(C.white).setFontColor(C.greyDark).setVerticalAlignment("middle").setFontFamily("Arial").setIndent(1);
-  ws.getRange(19,2,1,4).merge().setFormula("=IF(B15=0,0,B18/B15)")
-    .setBackground(C.white).setFontColor(C.greyDark).setHorizontalAlignment("center")
-    .setNumberFormat("0.0%").setFontFamily("Arial");
-
-  spacerRow(ws, 20, 10);
-
-  ws.getRange(21,1,1,5).merge().setValue("  WHAT IF YOU PAID IT OFF FASTER?  —  change the term above to see")
-    .setBackground(C.greenDark).setFontColor(C.white).setFontWeight("bold").setFontSize(10)
-    .setVerticalAlignment("middle").setFontFamily("Arial");
-  ws.setRowHeight(21, 22);
-
-  [[10,C.white],[15,C.greyLight],[20,C.white]].forEach(function(pair, i) {
-    var yrs = pair[0], bg = pair[1], row = 22+i;
-    ws.setRowHeight(row, 22);
-    ws.getRange(row,1).setValue(yrs+"-year repayment").setBackground(bg).setFontColor(C.greyDark)
-      .setVerticalAlignment("middle").setFontFamily("Arial").setIndent(1);
-    ws.getRange(row,2).setFormula("=IF(B15=0,0,PMT($B$7/12,"+yrs+"*12,-B15))")
-      .setBackground(bg).setFontColor(C.greyDark).setHorizontalAlignment("right")
-      .setNumberFormat('"$"#,##0').setFontFamily("Arial");
-    ws.getRange(row,3).setValue("/ month").setBackground(bg).setFontColor(C.greyMid)
-      .setFontStyle("italic").setFontSize(9).setFontFamily("Arial");
-    ws.getRange(row,4).setFormula("=IF(B15=0,0,B"+row+"*"+yrs+"*12-B15)")
-      .setBackground(bg).setFontColor(C.orangeText).setHorizontalAlignment("right")
-      .setNumberFormat('"$"#,##0').setFontFamily("Arial");
-    ws.getRange(row,5).setValue("total interest paid").setBackground(bg).setFontColor(C.greyMid)
-      .setFontStyle("italic").setFontSize(9).setFontFamily("Arial");
-  });
-
-  spacerRow(ws, 25, 8);
-  ws.setRowHeight(26, 20);
-  ws.getRange(26,1,1,5).merge()
-    .setValue("Rates shown are hypothetical — your actual rate depends on credit and cosigner.  Always compare federal options first.  |  College Made Clear  •  collegemadeclear.com")
-    .setFontColor(C.greyMid).setFontStyle("italic").setFontSize(8).setHorizontalAlignment("center").setWrap(true).setFontFamily("Arial");
-}
-
-// ── TAB 6: EXPLAINER ─────────────────────────────────────────
-function buildExplainer(ss) {
-  var ws = ss.insertSheet("Loan Types Explained", 5);
-  ws.setColumnWidth(1, 160);
-  ws.setColumnWidth(2, 380);
-  ws.setColumnWidth(3, 180);
-
-  ws.setRowHeight(1, 38);
-  ws.getRange(1,1,1,3).merge().setValue("Understanding Your Loan Options")
-    .setBackground(C.purpleDark).setFontColor(C.white).setFontWeight("bold").setFontSize(14)
-    .setHorizontalAlignment("center").setVerticalAlignment("middle").setFontFamily("Arial");
-
-  ws.setRowHeight(2, 36);
-  ws.getRange(2,1,1,3).merge()
-    .setValue("Not all loans are equal. Before you borrow, understand what you're signing up for — and in what order you should borrow.")
-    .setBackground(C.greyLight).setFontColor(C.greyDark).setFontSize(9).setWrap(true).setFontFamily("Arial");
-
-  spacerRow(ws, 3, 8);
-
-  ws.setRowHeight(4, 28);
-  [["Loan Type", 1],["What You Need to Know", 2],["Key Numbers", 3]].forEach(function(pair) {
-    ws.getRange(4, pair[1]).setValue(pair[0]).setBackground(C.purple).setFontColor(C.white)
-      .setFontWeight("bold").setHorizontalAlignment("center").setVerticalAlignment("middle").setFontFamily("Arial");
-  });
-
-  var loans = [
-    {
-      type: "Subsidized\nDirect Loan", hbg: C.greenDark, hfc: C.white,
-      desc: "The best federal loan available. The government pays your interest while you are enrolled at least half-time and during your 6-month grace period after graduation. Only available to undergrads who demonstrate financial need via FAFSA. Always borrow this first.",
-      nums: "Rate: 6.39% (2025–26)\nMax: $3,500–$5,500/yr\nRepayment: 6 months after graduation",
-      bg: C.greenTint, fc: C.greenDark, h: 70
-    },
-    {
-      type: "Unsubsidized\nDirect Loan", hbg: C.purple, hfc: C.white,
-      desc: "Available to any student who files a FAFSA, regardless of financial need. Interest begins accruing immediately — even while you're in school. If you don't pay the interest while enrolled, it capitalizes and gets added to your principal. You then pay interest on your interest.",
-      nums: "Rate: 6.39% (2025–26)\nMax: $2,000–$7,000/yr\nRepayment: 6 months after graduation",
-      bg: C.purpleTint, fc: C.purpleDark, h: 70
-    },
-    {
-      type: "Parent PLUS\nLoan", hbg: C.amberText, hfc: C.white,
-      desc: "A federal loan in the parent's name — not the student's. Parents are fully responsible for repayment. Requires a credit check. Interest accrues immediately and repayment begins 60 days after disbursement unless deferred. No annual limit beyond cost of attendance — which makes it easy to overborrow. Use carefully.",
-      nums: "Rate: 8.94% (2025–26)\nNo annual cap\nRepayment: begins at disbursement",
-      bg: C.yellowTint, fc: C.amberText, h: 80
-    },
-    {
-      type: "Private\nLoan", hbg: "#555555", hfc: C.white,
-      desc: "Issued by banks, credit unions, and online lenders. Your rate depends on credit score and cosigner — you won't know it until you apply. No income-driven repayment. No forgiveness programs. Variable rates can increase. Always borrow federal first. Treat private loans as a last resort.",
-      nums: "Rate: 4%–16% (varies)\nNo standard limits\nTerms vary by lender",
-      bg: C.redTint, fc: C.redText, h: 70
-    }
-  ];
-
-  loans.forEach(function(loan, i) {
-    var row = 5 + i;
-    ws.setRowHeight(row, loan.h);
-    ws.getRange(row,1).setValue(loan.type).setBackground(loan.hbg).setFontColor(loan.hfc)
-      .setFontWeight("bold").setHorizontalAlignment("center").setVerticalAlignment("middle")
-      .setWrap(true).setFontFamily("Arial");
-    ws.getRange(row,2).setValue(loan.desc).setBackground(loan.bg).setFontColor(C.greyDark)
-      .setFontSize(9).setWrap(true).setVerticalAlignment("middle").setFontFamily("Arial");
-    ws.getRange(row,2).setIndent(1);
-    ws.getRange(row,3).setValue(loan.nums).setBackground(loan.bg).setFontColor(loan.fc)
-      .setFontWeight("bold").setFontSize(9).setWrap(true).setVerticalAlignment("middle").setFontFamily("Arial");
-    ws.getRange(row,3).setIndent(1);
-  });
-
-  spacerRow(ws, 9, 8);
-
-  ws.setRowHeight(10, 22);
-  ws.getRange(10,1,1,3).merge().setValue("  THE RIGHT ORDER TO BORROW")
-    .setBackground(C.greenDark).setFontColor(C.white).setFontWeight("bold").setFontSize(10)
-    .setVerticalAlignment("middle").setFontFamily("Arial");
-
-  var order = [
-    ["1", "Subsidized Direct Loans first — free interest while in school",           C.greenTint,  C.greenDark, C.greenDark],
-    ["2", "Unsubsidized Direct Loans second — interest accrues but rate is federal",  C.purpleTint, C.purpleDark, C.purple],
-    ["3", "Parent PLUS Loans if needed — higher rate, parent's responsibility",       C.yellowTint, C.amberText, C.amberText],
-    ["4", "Private Loans only as a last resort — fewest protections, highest risk",   C.redTint,    C.redText,   C.redText],
-  ];
-
-  order.forEach(function(item, i) {
-    var row = 11 + i;
-    ws.setRowHeight(row, 26);
-    ws.getRange(row,1).setValue(item[0]).setBackground(item[4]).setFontColor(C.white)
-      .setFontWeight("bold").setFontSize(14).setHorizontalAlignment("center")
-      .setVerticalAlignment("middle").setFontFamily("Arial");
-    ws.getRange(row,2,1,2).merge().setValue(item[1]).setBackground(item[0]).setFontColor(item[1] === C.greenTint ? C.greenDark : item[3])
-      .setFontWeight("bold").setFontSize(10).setVerticalAlignment("middle").setFontFamily("Arial").setIndent(1);
-  });
-
-  spacerRow(ws, 15, 8);
-  ws.setRowHeight(16, 20);
-  ws.getRange(16,1,1,3).merge()
-    .setValue("Rates: Federal Student Aid (studentaid.gov), 2025–26.  |  College Made Clear  •  collegemadeclear.com")
-    .setFontColor(C.greyMid).setFontStyle("italic").setFontSize(8).setHorizontalAlignment("center").setFontFamily("Arial");
-}
-
-// ── UTILITY ───────────────────────────────────────────────────
-function colLetter(col) {
-  return String.fromCharCode(64 + col);
-}
+// Init
+calcComparison();
+calcLoans();
+updateLimits();
+</script>
+</body>
+</html>

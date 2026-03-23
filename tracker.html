@@ -3,1283 +3,1068 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>College Application Tracker — College Made Clear</title>
+<title>Free College Application Tracker — College Made Clear</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --purple-dark:   #4A3F63;
-    --purple:        #6B5B8B;
-    --purple-tint:   #EDE9F4;
-    --green:         #2E7D6B;
-    --green-tint:    #E8F4F0;
-    --amber:         #B05C00;
-    --amber-tint:    #FFF8E1;
-    --orange:        #E65100;
-    --orange-tint:   #FFF3E0;
-    --white:         #FFFFFF;
-    --grey-dark:     #3A3A3A;
-    --grey-mid:      #777777;
-    --page-bg:       #F4F2F8;
-    --border:        #E4E0F0;
+:root {
+  --pd: #4A3F63; --pm: #6B5B8B; --pt: #EDE9F4;
+  --gd: #2E7D6B; --gt: #E8F4F0;
+  --amb: #B05C00; --ambt: #FFF8E1;
+  --org: #E65100; --orgt: #FFF3E0;
+  --wh: #FFFFFF; --grdark: #3A3A3A; --grm: #777777;
+  --bg: #F4F2F8; --bdr: #E4E0F0;
+  --hr-bg:#F8D7DA; --hr-tx:#C62828;
+  --r-bg: #FFF3E0; --r-tx: #E65100;
+  --t-bg: #FFF8E1; --t-tx: #B05C00;
+  --l-bg: #E8F4F0; --l-tx: #2E7D6B;
+  --hl-bg:#D4EDDA; --hl-tx:#1B5E20;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--grdark);line-height:1.6;overflow-x:hidden;}
 
-    --high-reach-bg:   #F8D7DA;
-    --high-reach-text: #C62828;
-    --reach-bg:        #FFF3E0;
-    --reach-text:      #E65100;
-    --target-bg:       #FFF8E1;
-    --target-text:     #B05C00;
-    --likely-bg:       #E8F4F0;
-    --likely-text:     #2E7D6B;
-    --high-likely-bg:  #D4EDDA;
-    --high-likely-text:#1B5E20;
-  }
+/* ── TOP BAR ── */
+.topbar{background:var(--pd);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.topbar-logo{font-family:'DM Serif Display',serif;font-size:18px;color:var(--wh);text-decoration:none;}
+.topbar-logo span{font-style:italic;color:#C8B8E8;}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.topbar-note{font-size:11px;color:rgba(255,255,255,0.6);}
+.btn-etsy{background:var(--wh);color:var(--pd);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;padding:7px 16px;border-radius:6px;text-decoration:none;border:none;cursor:pointer;white-space:nowrap;}
+.btn-etsy:hover{opacity:0.9;}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── UPGRADE BANNER ── */
+.upgrade-bar{
+  background: linear-gradient(135deg, var(--gd) 0%, #1a5c4e 100%);
+  color:var(--wh);padding:10px 24px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;
+}
+.upgrade-bar p{font-size:13px;}
+.upgrade-bar strong{font-weight:700;}
+.upgrade-bar a{color:var(--wh);font-weight:700;text-decoration:underline;font-size:12px;white-space:nowrap;}
+.school-counter{
+  display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;
+}
+.counter-pips{display:flex;gap:3px;}
+.pip{width:14px;height:14px;border-radius:3px;border:2px solid rgba(255,255,255,0.4);}
+.pip.filled{background:var(--wh);border-color:var(--wh);}
+.pip.full{background:#FF9800;border-color:#FF9800;}
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--page-bg);
-    color: var(--grey-dark);
-    line-height: 1.6;
-    overflow-x: hidden;
-  }
+/* ── SEARCH AREA ── */
+.search-section{background:var(--wh);border-bottom:2px solid var(--bdr);padding:16px 24px;}
+.search-inner{max-width:900px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.search-label{font-size:13px;font-weight:600;color:var(--pd);white-space:nowrap;}
+.search-wrap{position:relative;flex:1;min-width:200px;max-width:460px;}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--pm);font-size:14px;pointer-events:none;}
+.search-input{
+  width:100%;padding:11px 14px 11px 38px;
+  border:2px solid var(--bdr);border-radius:8px;
+  font-family:'DM Sans',sans-serif;font-size:14px;
+  color:var(--pd);background:var(--pt);outline:none;
+  transition:border-color 0.15s;
+}
+.search-input:focus{border-color:var(--pm);}
+.search-input::placeholder{color:var(--grm);font-style:italic;}
+.search-input:disabled{opacity:0.5;cursor:not-allowed;}
+.search-msg{font-size:12px;min-height:20px;font-style:italic;flex-basis:100%;}
+.msg-ok{color:var(--gd);}
+.msg-warn{color:var(--amb);}
+.msg-err{color:var(--org);}
+.msg-limit{color:var(--org);font-weight:600;}
 
-  /* ── HERO ── */
-  .hero {
-    background: var(--purple-dark);
-    color: white;
-    padding: 72px 24px 64px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-  .hero::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 80% 60% at 20% 50%, rgba(107,91,139,0.4) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 80% at 80% 30%, rgba(46,125,107,0.2) 0%, transparent 60%);
-    pointer-events: none;
-  }
-  .hero-eyebrow {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.6);
-    margin-bottom: 16px;
-    position: relative;
-  }
-  .hero h1 {
-    font-family: 'DM Serif Display', serif;
-    font-size: clamp(36px, 6vw, 64px);
-    line-height: 1.1;
-    margin-bottom: 20px;
-    position: relative;
-  }
-  .hero h1 em {
-    font-style: italic;
-    color: #C8B8E8;
-  }
-  .hero-sub {
-    font-size: 18px;
-    font-weight: 300;
-    color: rgba(255,255,255,0.8);
-    max-width: 560px;
-    margin: 0 auto 36px;
-    position: relative;
-  }
-  .hero-cta-row {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    flex-wrap: wrap;
-    position: relative;
-  }
-  .btn-primary {
-    background: white;
-    color: var(--purple-dark);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    font-weight: 600;
-    padding: 14px 28px;
-    border-radius: 8px;
-    text-decoration: none;
-    border: none;
-    cursor: pointer;
-    transition: transform 0.15s, box-shadow 0.15s;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-  }
-  .btn-secondary {
-    background: transparent;
-    color: white;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    font-weight: 500;
-    padding: 14px 28px;
-    border-radius: 8px;
-    text-decoration: none;
-    border: 2px solid rgba(255,255,255,0.35);
-    cursor: pointer;
-    transition: border-color 0.15s, background 0.15s;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .btn-secondary:hover {
-    border-color: rgba(255,255,255,0.7);
-    background: rgba(255,255,255,0.08);
-  }
-  .btn-disabled {
-    opacity: 0.55;
-    cursor: default;
-    pointer-events: none;
-  }
+/* ── TABS ── */
+.tabs{background:var(--wh);border-bottom:2px solid var(--bdr);padding:0 24px;display:flex;gap:0;}
+.tab{padding:10px 20px;font-size:12px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;color:var(--grm);transition:color 0.15s,border-color 0.15s;}
+.tab.active{color:var(--pd);border-bottom-color:var(--pd);}
 
-  /* ── SECTION WRAPPER ── */
-  .section {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 64px 24px;
-  }
-  .section-label {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--purple);
-    margin-bottom: 10px;
-  }
-  .section-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: clamp(28px, 4vw, 42px);
-    color: var(--purple-dark);
-    line-height: 1.2;
-    margin-bottom: 16px;
-  }
-  .section-body {
-    font-size: 16px;
-    color: var(--grey-mid);
-    max-width: 600px;
-    margin-bottom: 40px;
-  }
+/* ── TABLE ── */
+.table-wrap{overflow-x:auto;background:var(--wh);}
+table{width:100%;border-collapse:collapse;font-size:11px;}
+thead tr:first-child th{background:var(--pd);color:var(--wh);padding:8px 10px;font-size:9px;letter-spacing:0.06em;text-transform:uppercase;font-weight:700;}
+thead tr:first-child th.th-name{background:var(--pd);text-align:left;min-width:200px;}
+thead tr:first-child th.th-auto{background:var(--pm);}
+thead tr:first-child th.th-track{background:#3D6B5A;}
+thead tr:nth-child(2) th{background:var(--pm);color:var(--wh);padding:7px 10px;font-weight:600;text-align:center;white-space:nowrap;}
+thead tr:nth-child(2) th.th-name2{background:var(--pd);text-align:left;}
+thead tr:nth-child(2) th.th-track2{background:#3D6B5A;}
+td{padding:7px 10px;border-bottom:1px solid var(--bdr);text-align:center;vertical-align:middle;}
+td.td-name{
+  text-align:left;font-weight:600;color:var(--pd);
+  background:var(--pt);min-width:200px;position:relative;
+}
+td.td-name.empty{color:var(--grm);font-style:italic;font-weight:400;}
+td.td-auto{background:#FAFAFA;color:var(--grdark);font-size:11px;}
+tr:nth-child(even) td.td-auto{background:#F3F0F9;}
+tr:nth-child(even) td.td-name{background:#E8E3F2;}
+td.td-track{background:#EDF4F1;font-size:11px;}
+tr:nth-child(even) td.td-track{background:#E3EFEA;}
 
-  /* ── DEMO SECTION ── */
-  .demo-wrap {
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 4px 32px rgba(74,63,99,0.10);
-  }
-  .demo-header {
-    background: var(--purple-dark);
-    color: white;
-    padding: 14px 20px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .demo-header .dots {
-    display: flex;
-    gap: 5px;
-  }
-  .demo-header .dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.25);
-  }
-  .demo-header .dot.red   { background: #FF5F57; }
-  .demo-header .dot.yellow{ background: #FFBD2E; }
-  .demo-header .dot.green { background: #28C840; }
+/* ── CELL WIDGETS ── */
+.level-sel{
+  font-family:'DM Sans',sans-serif;font-size:10px;padding:3px 5px;
+  border-radius:4px;border:1px solid var(--bdr);font-weight:600;
+  cursor:pointer;width:100%;min-width:90px;
+}
+.app-badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;}
+.dec-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;}
+.chk{font-size:15px;cursor:pointer;user-select:none;}
+.del-btn{
+  background:none;border:none;cursor:pointer;
+  color:rgba(74,63,99,0.3);font-size:13px;padding:0 4px;
+  transition:color 0.15s;position:absolute;right:4px;top:50%;transform:translateY(-50%);
+}
+.del-btn:hover{color:var(--org);}
+.notes-input{
+  background:transparent;border:none;font-family:'DM Sans',sans-serif;
+  font-size:11px;color:var(--grdark);width:100%;min-width:150px;
+  padding:2px 4px;border-radius:3px;
+}
+.notes-input:focus{outline:1px solid var(--gd);background:var(--wh);}
+.date-input{
+  background:transparent;border:none;font-family:'DM Sans',sans-serif;
+  font-size:11px;color:var(--grdark);text-align:center;width:90px;
+}
+.date-input:focus{outline:1px solid var(--gd);background:var(--wh);border-radius:3px;}
 
-  /* Search bar */
-  .demo-search-row {
-    padding: 20px 20px 0;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-  }
-  .demo-search-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--purple-dark);
-    white-space: nowrap;
-  }
-  .demo-input-wrap {
-    position: relative;
-    flex: 1;
-    max-width: 420px;
-  }
-  .demo-input {
-    width: 100%;
-    padding: 10px 14px 10px 36px;
-    border: 2px solid var(--border);
-    border-radius: 8px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    color: var(--purple-dark);
-    background: var(--purple-tint);
-    outline: none;
-    transition: border-color 0.15s;
-  }
-  .demo-input:focus { border-color: var(--purple); }
-  .demo-input::placeholder { color: var(--grey-mid); font-style: italic; }
-  .search-icon {
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--purple);
-    font-size: 14px;
-    pointer-events: none;
-  }
-  .demo-result-msg {
-    padding: 8px 20px 0;
-    font-size: 12px;
-    min-height: 26px;
-    font-style: italic;
-  }
-  .msg-found   { color: var(--green); }
-  .msg-suggest { color: var(--amber); }
-  .msg-none    { color: var(--orange); }
+/* ── UPGRADE WALL ROW ── */
+.upgrade-row td{
+  background: linear-gradient(135deg,#f0ebe8,#ede9f4);
+  padding:18px 24px;text-align:center;border:none;
+}
+.upgrade-row-inner{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;}
+.upgrade-row p{font-size:13px;color:var(--pd);}
 
-  /* Spreadsheet table */
-  .demo-table-wrap {
-    overflow-x: auto;
-    padding: 16px 0 0;
-  }
-  table.demo-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 11px;
-  }
-  .demo-table th {
-    background: var(--purple);
-    color: white;
-    padding: 8px 10px;
-    text-align: center;
-    font-weight: 600;
-    font-size: 10px;
-    letter-spacing: 0.04em;
-    white-space: nowrap;
-  }
-  .demo-table th.col-name { background: var(--purple-dark); text-align: left; }
-  .demo-table .section-row td {
-    background: var(--purple-dark);
-    color: rgba(255,255,255,0.7);
-    font-size: 9px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 4px 10px;
-  }
-  .demo-table td {
-    padding: 7px 10px;
-    border-bottom: 1px solid var(--border);
-    text-align: center;
-    color: var(--grey-mid);
-    font-style: italic;
-    white-space: nowrap;
-  }
-  .demo-table td.col-name {
-    text-align: left;
-    font-style: normal;
-    font-weight: 600;
-    color: var(--purple-dark);
-    background: var(--purple-tint);
-    min-width: 180px;
-  }
-  .demo-table td.col-name.empty {
-    color: var(--grey-mid);
-    font-style: italic;
-    font-weight: 400;
-  }
-  .demo-table td.autofill {
-    background: #FAFAFA;
-    font-style: normal;
-    color: var(--grey-dark);
-    font-size: 11px;
-  }
-  .demo-table tr:nth-child(even) td { background: var(--page-bg); }
-  .demo-table tr:nth-child(even) td.autofill { background: #F0EEF6; }
-  .demo-table tr:nth-child(even) td.col-name { background: #E6E0F0; }
+/* ── DASHBOARD ── */
+.dash-wrap{padding:20px 24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;}
+.dash-card{}
+.dash-card-header{padding:9px 14px;border-radius:8px 8px 0 0;font-size:11px;font-weight:700;letter-spacing:0.06em;color:var(--wh);}
+.dash-card-body{border:1px solid var(--bdr);border-top:none;border-radius:0 0 8px 8px;overflow:hidden;}
+.dash-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--bdr);font-size:12px;}
+.dash-row:last-child{border-bottom:none;}
+.dash-num{font-weight:700;font-size:15px;min-width:24px;text-align:right;}
+.dash-upgrade{
+  background:var(--pt);border:1px dashed var(--pm);
+  border-radius:8px;padding:14px 16px;text-align:center;
+  font-size:12px;color:var(--pm);margin-top:4px;
+}
+.dash-upgrade a{color:var(--pd);font-weight:700;}
 
-  /* List type badges */
-  .badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 10px;
-    font-weight: 600;
-    white-space: nowrap;
-  }
-  .badge-high-reach { background: var(--high-reach-bg); color: var(--high-reach-text); }
-  .badge-reach      { background: var(--reach-bg);      color: var(--reach-text); }
-  .badge-target     { background: var(--target-bg);     color: var(--target-text); }
-  .badge-likely     { background: var(--likely-bg);     color: var(--likely-text); }
-  .badge-high-likely{ background: var(--high-likely-bg);color: var(--high-likely-text); }
+/* ── FOOTER ── */
+.tool-footer{
+  background:var(--pd);color:rgba(255,255,255,0.5);
+  text-align:center;padding:20px 24px;font-size:11px;
+}
+.tool-footer a{color:rgba(255,255,255,0.7);text-decoration:none;}
 
-  .demo-table td.level-cell { padding: 5px 8px; }
-
-  /* Input row highlight */
-  .input-row td.col-name {
-    background: var(--purple-tint) !important;
-  }
-
-  /* Demo footer note */
-  .demo-footer {
-    padding: 12px 20px;
-    font-size: 11px;
-    color: var(--grey-mid);
-    font-style: italic;
-    border-top: 1px solid var(--border);
-    background: var(--page-bg);
-  }
-
-  /* ── HOW IT WORKS ── */
-  .features-bg {
-    background: var(--purple-dark);
-    color: white;
-  }
-  .features-bg .section-label { color: rgba(255,255,255,0.5); }
-  .features-bg .section-title { color: white; }
-  .features-bg .section-body  { color: rgba(255,255,255,0.65); }
-
-  .features-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 24px;
-    margin-top: 8px;
-  }
-  .feature-card {
-    background: rgba(255,255,255,0.07);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 12px;
-    padding: 24px;
-  }
-  .feature-icon {
-    font-size: 28px;
-    margin-bottom: 12px;
-  }
-  .feature-card h3 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 18px;
-    margin-bottom: 8px;
-    color: white;
-  }
-  .feature-card p {
-    font-size: 14px;
-    color: rgba(255,255,255,0.65);
-    line-height: 1.6;
-  }
-
-  /* ── LIST LEVELS ── */
-  .levels-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-    gap: 12px;
-    margin-top: 8px;
-  }
-  .level-card {
-    border-radius: 10px;
-    padding: 18px 16px;
-    border: 1px solid var(--border);
-  }
-  .level-card .level-name {
-    font-weight: 700;
-    font-size: 13px;
-    margin-bottom: 6px;
-  }
-  .level-card .level-desc {
-    font-size: 12px;
-    line-height: 1.5;
-    color: var(--grey-dark);
-    opacity: 0.85;
-  }
-  .lc-hr { background: var(--high-reach-bg); }
-  .lc-hr .level-name { color: var(--high-reach-text); }
-  .lc-r  { background: var(--reach-bg); }
-  .lc-r  .level-name { color: var(--reach-text); }
-  .lc-t  { background: var(--target-bg); }
-  .lc-t  .level-name { color: var(--target-text); }
-  .lc-l  { background: var(--likely-bg); }
-  .lc-l  .level-name { color: var(--likely-text); }
-  .lc-hl { background: var(--high-likely-bg); }
-  .lc-hl .level-name { color: var(--high-likely-text); }
-
-  /* ── WHAT'S INCLUDED ── */
-  .included-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 20px;
-  }
-  .included-card {
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-  }
-  .included-card h3 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 17px;
-    color: var(--purple-dark);
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .included-card ul {
-    list-style: none;
-    padding: 0;
-  }
-  .included-card ul li {
-    font-size: 13px;
-    color: var(--grey-dark);
-    padding: 4px 0;
-    padding-left: 18px;
-    position: relative;
-  }
-  .included-card ul li::before {
-    content: '✓';
-    position: absolute;
-    left: 0;
-    color: var(--green);
-    font-weight: 700;
-  }
-
-  /* ── ABOUT ── */
-  .about-bg { background: white; }
-  .about-inner {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 48px;
-    align-items: start;
-  }
-  @media (max-width: 640px) {
-    .about-inner { grid-template-columns: 1fr; }
-  }
-  .about-badge {
-    background: var(--purple-tint);
-    border: 2px solid var(--border);
-    border-radius: 16px;
-    padding: 28px 24px;
-    text-align: center;
-  }
-  .about-badge .monogram {
-    width: 72px; height: 72px;
-    background: var(--purple-dark);
-    color: white;
-    border-radius: 50%;
-    font-family: 'DM Serif Display', serif;
-    font-size: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 14px;
-  }
-  .about-badge .name {
-    font-family: 'DM Serif Display', serif;
-    font-size: 20px;
-    color: var(--purple-dark);
-    margin-bottom: 4px;
-  }
-  .about-badge .role {
-    font-size: 12px;
-    color: var(--grey-mid);
-    line-height: 1.5;
-  }
-  .about-content h2 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 32px;
-    color: var(--purple-dark);
-    margin-bottom: 16px;
-  }
-  .about-content p {
-    font-size: 15px;
-    color: var(--grey-dark);
-    line-height: 1.7;
-    margin-bottom: 14px;
-  }
-  .cred-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 20px;
-  }
-  .cred {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 13px;
-    color: var(--grey-dark);
-  }
-  .cred-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--purple);
-    flex-shrink: 0;
-  }
-
-  /* ── VIDEO PLACEHOLDER ── */
-  .video-placeholder {
-    background: var(--purple-dark);
-    border-radius: 12px;
-    aspect-ratio: 16/9;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    gap: 12px;
-    margin-top: 32px;
-    cursor: pointer;
-    border: 2px dashed rgba(255,255,255,0.2);
-    transition: border-color 0.2s;
-  }
-  .video-placeholder:hover { border-color: rgba(255,255,255,0.5); }
-  .play-btn {
-    width: 56px; height: 56px;
-    background: rgba(255,255,255,0.15);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-  }
-  .video-placeholder p {
-    font-size: 13px;
-    color: rgba(255,255,255,0.5);
-    font-style: italic;
-  }
-
-  /* ── FINAL CTA ── */
-  .cta-section {
-    background: var(--purple-dark);
-    text-align: center;
-    padding: 72px 24px;
-    position: relative;
-    overflow: hidden;
-  }
-  .cta-section::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse 70% 70% at 50% 50%, rgba(107,91,139,0.5) 0%, transparent 70%);
-    pointer-events: none;
-  }
-  .cta-section h2 {
-    font-family: 'DM Serif Display', serif;
-    font-size: clamp(28px, 4vw, 44px);
-    color: white;
-    margin-bottom: 16px;
-    position: relative;
-  }
-  .cta-section p {
-    font-size: 16px;
-    color: rgba(255,255,255,0.7);
-    max-width: 480px;
-    margin: 0 auto 32px;
-    position: relative;
-  }
-  .price-tag {
-    display: inline-block;
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.2);
-    color: white;
-    font-size: 13px;
-    padding: 6px 16px;
-    border-radius: 20px;
-    margin-bottom: 24px;
-    position: relative;
-  }
-
-  /* ── FOOTER ── */
-  footer {
-    background: #2A2035;
-    color: rgba(255,255,255,0.45);
-    text-align: center;
-    padding: 28px 24px;
-    font-size: 12px;
-  }
-  footer a { color: rgba(255,255,255,0.6); text-decoration: none; }
-  footer a:hover { color: white; }
-
-  /* ── ANIMATIONS ── */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .hero > * { animation: fadeUp 0.6s ease both; }
-  .hero-eyebrow { animation-delay: 0.1s; }
-  .hero h1      { animation-delay: 0.2s; }
-  .hero-sub     { animation-delay: 0.3s; }
-  .hero-cta-row { animation-delay: 0.4s; }
-
-  /* Typing cursor */
-  .cursor {
-    display: inline-block;
-    width: 2px;
-    height: 14px;
-    background: var(--purple);
-    margin-left: 2px;
-    vertical-align: middle;
-    animation: blink 0.9s step-end infinite;
-  }
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50%       { opacity: 0; }
-  }
-
-  /* ── RESPONSIVE ── */
-  @media (max-width: 600px) {
-    .demo-table th, .demo-table td { font-size: 10px; padding: 6px 7px; }
-    .features-grid { grid-template-columns: 1fr; }
-    .levels-grid   { grid-template-columns: 1fr 1fr; }
-  }
+/* ── LIMIT MODAL ── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(74,63,99,0.7);
+  display:flex;align-items:center;justify-content:center;
+  z-index:999;opacity:0;pointer-events:none;
+  transition:opacity 0.2s;
+}
+.modal-overlay.show{opacity:1;pointer-events:all;}
+.modal{
+  background:var(--wh);border-radius:16px;padding:36px 32px;
+  max-width:440px;width:90%;text-align:center;
+  box-shadow:0 20px 60px rgba(74,63,99,0.3);
+  transform:translateY(10px);transition:transform 0.2s;
+}
+.modal-overlay.show .modal{transform:translateY(0);}
+.modal-icon{font-size:40px;margin-bottom:12px;}
+.modal h2{font-family:'DM Serif Display',serif;font-size:24px;color:var(--pd);margin-bottom:10px;}
+.modal p{font-size:14px;color:var(--grm);line-height:1.6;margin-bottom:20px;}
+.modal-features{text-align:left;background:var(--pt);border-radius:10px;padding:14px 18px;margin-bottom:22px;}
+.modal-features li{font-size:13px;color:var(--grdark);padding:3px 0 3px 18px;position:relative;list-style:none;}
+.modal-features li::before{content:'✓';position:absolute;left:0;color:var(--gd);font-weight:700;}
+.modal-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.btn-modal-primary{background:var(--pd);color:var(--wh);font-family:'DM Sans',sans-serif;font-weight:700;font-size:14px;padding:12px 24px;border-radius:8px;text-decoration:none;border:none;cursor:pointer;}
+.btn-modal-secondary{background:transparent;color:var(--grm);font-family:'DM Sans',sans-serif;font-size:13px;padding:12px 20px;border-radius:8px;border:1px solid var(--bdr);cursor:pointer;}
+.btn-modal-secondary:hover{background:var(--bg);}
 </style>
 </head>
 <body>
 
-<!-- ── HERO ── -->
-<section class="hero">
-  <p class="hero-eyebrow">College Made Clear</p>
-  <h1>The College Application<br><em>Tracker That Thinks</em></h1>
-  <p class="hero-sub">Type "UCLA" or "Alabama Birmingham" — it knows what you mean. A Google Sheets tracker built for real families navigating the college search.</p>
-  <div class="hero-cta-row">
-    <a href="YOUR_ETSY_LINK_HERE" class="btn-primary">
-      ⬇ Get the Tracker on Etsy
-    </a>
-    <a href="#video" class="btn-secondary btn-disabled">
-      ▶ Watch the Walkthrough
-    </a>
+<!-- ── TOP BAR ── -->
+<div class="topbar">
+  <a href="index.html" class="topbar-logo">College <span>Made Clear</span></a>
+  <div class="topbar-right">
+    <span class="topbar-note">Free tool — data resets on refresh</span>
+    <a href="YOUR_ETSY_TRACKER_LINK" class="btn-etsy" target="_blank">Get the Full Tracker →</a>
   </div>
-</section>
+</div>
 
-<!-- ── LIVE DEMO ── -->
-<section class="section">
-  <p class="section-label">Try it yourself</p>
-  <h2 class="section-title">Type a college name below</h2>
-  <p class="section-body">The real tracker connects to federal data for 1,800+ schools. This demo uses 60 well-known schools to show you how the smart search works.</p>
+<!-- ── UPGRADE BANNER ── */
+<div class="upgrade-bar">
+  <p><strong>Free tracker:</strong> up to 8 schools · no saving · limited columns &nbsp;|&nbsp; <strong>Full Google Sheets version:</strong> 30 schools · saves forever · complete dashboard · 1,800+ schools</p>
+  <a href="YOUR_ETSY_TRACKER_LINK" target="_blank">Get the full tracker on Etsy →</a>
+</div>
 
-  <div class="demo-wrap">
-    <div class="demo-header">
-      <div class="dots">
-        <div class="dot red"></div>
-        <div class="dot yellow"></div>
-        <div class="dot green"></div>
-      </div>
-      My College List — College Application Tracker
+<!-- ── SEARCH ── -->
+<div class="search-section">
+  <div class="search-inner">
+    <span class="search-label">Add a college:</span>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" class="search-input" id="searchInput"
+        placeholder="Type UCLA, Penn State, Boston University..."
+        autocomplete="off">
     </div>
-
-    <div class="demo-search-row">
-      <span class="demo-search-label">Try typing:</span>
-      <div class="demo-input-wrap">
-        <span class="search-icon">🔍</span>
-        <input
-          type="text"
-          class="demo-input"
-          id="demoInput"
-          placeholder="UCLA, Penn State, Alabama Birmingham..."
-          autocomplete="off"
-        >
-      </div>
+    <div class="school-counter">
+      <span id="counterText">0 of 8</span>
+      <div class="counter-pips" id="counterPips"></div>
     </div>
-    <div class="demo-result-msg" id="resultMsg"></div>
-
-    <div class="demo-table-wrap">
-      <table class="demo-table">
-        <thead>
-          <tr>
-            <th class="col-name">College Name</th>
-            <th>List Level</th>
-            <th>State</th>
-            <th>Type</th>
-            <th>Size</th>
-            <th>Setting</th>
-            <th>Accept %</th>
-            <th>In-State Tuition</th>
-            <th>OOS Tuition</th>
-            <th>Grad Rate</th>
-          </tr>
-        </thead>
-        <tbody id="demoTableBody">
-        </tbody>
-      </table>
-    </div>
-    <div class="demo-footer">
-      ↑ Blue cells = type here &nbsp;|&nbsp; Grey cells = auto-filled from federal data &nbsp;|&nbsp; The full tracker has 30 rows and connects to 1,800+ schools
-    </div>
+    <div class="search-msg" id="searchMsg"></div>
   </div>
-</section>
+</div>
 
-<!-- ── FEATURES ── -->
-<section class="features-bg">
-  <div class="section">
-    <p class="section-label">How it works</p>
-    <h2 class="section-title">Built for how families actually search</h2>
-    <p class="section-body">No more hunting for official names or copy-pasting from college websites.</p>
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon">🧠</div>
-        <h3>Smart name matching</h3>
-        <p>Type UCLA, BU, Penn State, or "Alabama Birmingham" — it finds the right school and fills in the official name automatically.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">⚡</div>
-        <h3>Auto-fills federal data</h3>
-        <p>State, control type, enrollment, setting, acceptance rate, tuition, and graduation rate populate automatically from federal College Scorecard data.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">📊</div>
-        <h3>Live dashboard</h3>
-        <p>A built-in dashboard tracks your list balance, submission progress, and decision tally — updating automatically as you fill in your list.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">✅</div>
-        <h3>No setup required</h3>
-        <p>Make a copy of the Google Sheet and start adding colleges. The smart search works immediately — no installation, no configuration, no API keys.</p>
-      </div>
+<!-- ── TABS ── -->
+<div class="tabs">
+  <div class="tab active" id="tab-list" onclick="switchTab('list')">📋 My College List</div>
+  <div class="tab" id="tab-dash" onclick="switchTab('dash')">📊 Dashboard</div>
+</div>
+
+<!-- ── LIST PANEL ── -->
+<div id="panel-list">
+  <div class="table-wrap">
+    <table id="mainTable">
+      <thead>
+        <tr>
+          <th class="th-name" rowspan="2">College Name</th>
+          <th rowspan="2">Level</th>
+          <th class="th-auto" colspan="8">AUTO-FILLED FROM FEDERAL DATA</th>
+          <th class="th-track" colspan="5">YOUR APPLICATION TRACKING</th>
+        </tr>
+        <tr>
+          <th class="th-name2">State</th>
+          <th class="th-name2">Type</th>
+          <th class="th-name2">Size</th>
+          <th class="th-name2">Setting</th>
+          <th class="th-name2">Accept %</th>
+          <th class="th-name2">In-State</th>
+          <th class="th-name2">OOS</th>
+          <th class="th-name2">Grad %</th>
+          <th class="th-track2">App Type</th>
+          <th class="th-track2">Deadline</th>
+          <th class="th-track2">Submitted?</th>
+          <th class="th-track2">Decision</th>
+          <th class="th-track2">Notes</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ── DASHBOARD PANEL ── -->
+<div id="panel-dash" style="display:none;">
+  <div class="dash-wrap">
+    <div class="dash-card">
+      <div class="dash-card-header" style="background:var(--pd);">LIST BALANCE</div>
+      <div class="dash-card-body" id="dash-balance"></div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-card-header" style="background:var(--gd);">APPLICATION PROGRESS</div>
+      <div class="dash-card-body" id="dash-progress"></div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-card-header" style="background:var(--pm);">DECISIONS RECEIVED</div>
+      <div class="dash-card-body" id="dash-decisions"></div>
     </div>
   </div>
-</section>
-
-<!-- ── LIST LEVELS ── -->
-<section class="section">
-  <p class="section-label">The five-level system</p>
-  <h2 class="section-title">A smarter way to build your list</h2>
-  <p class="section-body">Most trackers use Reach / Match / Safety. This one uses five levels so you can see the real shape of your list — and where it needs work.</p>
-  <div class="levels-grid">
-    <div class="level-card lc-hr">
-      <div class="level-name">High Reach</div>
-      <div class="level-desc">Stats below typical range or &lt;15% acceptance. A genuine long shot.</div>
-    </div>
-    <div class="level-card lc-r">
-      <div class="level-name">Reach</div>
-      <div class="level-desc">At or below the middle 50%. You're a real candidate, but unpredictable.</div>
-    </div>
-    <div class="level-card lc-t">
-      <div class="level-name">Target</div>
-      <div class="level-desc">Solidly in the middle 50%. You're competitive. Build your list here.</div>
-    </div>
-    <div class="level-card lc-l">
-      <div class="level-name">Likely</div>
-      <div class="level-desc">Above the middle 50%. Strong candidate with good odds. Every list needs these.</div>
-    </div>
-    <div class="level-card lc-hl">
-      <div class="level-name">Highly Likely</div>
-      <div class="level-desc">Well above the typical profile. Your safety net — pick ones you'd love to attend.</div>
+  <div style="padding:0 24px 24px;">
+    <div class="dash-upgrade">
+      📊 The full Google Sheets tracker includes a complete auto-updating dashboard with all 5 list levels, EA/ED counts, and decision tracking for up to 30 schools.<br>
+      <a href="YOUR_ETSY_TRACKER_LINK" target="_blank">Get the full tracker on Etsy →</a>
     </div>
   </div>
-</section>
-
-<!-- ── WHAT'S INCLUDED ── -->
-<section class="section" style="padding-top:0;">
-  <p class="section-label">What's in the tracker</p>
-  <h2 class="section-title">Four tabs. Everything you need.</h2>
-  <p class="section-body">One purchase, one Google Sheet, no subscriptions.</p>
-  <div class="included-grid">
-    <div class="included-card">
-      <h3>📋 My College List</h3>
-      <ul>
-        <li>30 rows for up to 30 schools</li>
-        <li>Smart college name search</li>
-        <li>Auto-filled federal data</li>
-        <li>Five-level list classification</li>
-        <li>App type, deadline, submission tracking</li>
-        <li>Decision status with color coding</li>
-        <li>Visit tracking and notes column</li>
-      </ul>
-    </div>
-    <div class="included-card">
-      <h3>📈 Dashboard</h3>
-      <ul>
-        <li>List balance at all five levels</li>
-        <li>Rolled-up Reach / Match / Likely totals</li>
-        <li>Submission progress counter</li>
-        <li>EA/ED application count</li>
-        <li>Decision tally — accepted, deferred, waitlisted, denied</li>
-        <li>Updates automatically as you work</li>
-      </ul>
-    </div>
-    <div class="included-card">
-      <h3>🗄 College Data</h3>
-      <ul>
-        <li>Pre-loaded with 1,800+ schools</li>
-        <li>Public and private nonprofit only</li>
-        <li>Bachelor's degree-granting only</li>
-        <li>Source: U.S. Dept. of Education</li>
-        <li>Updated annually each fall</li>
-      </ul>
-    </div>
-    <div class="included-card">
-      <h3>📖 Start Here Guide</h3>
-      <ul>
-        <li>How to enter college names</li>
-        <li>Five list level definitions</li>
-        <li>What every auto-filled column means</li>
-        <li>How to track applications</li>
-        <li>Dashboard explained</li>
-        <li>Data source and limitations</li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<!-- ── VIDEO ── -->
-<section class="section" id="video" style="padding-top:0;">
-  <p class="section-label">See it in action</p>
-  <h2 class="section-title">Watch the full walkthrough</h2>
-  <p class="section-body">A complete video walkthrough of the tracker is coming soon on the College Made Clear YouTube channel.</p>
-  <div class="video-placeholder">
-    <div class="play-btn">▶</div>
-    <strong style="font-size:15px;">Walkthrough Video — Coming Soon</strong>
-    <p>Subscribe to College Made Clear on YouTube to be notified</p>
-  </div>
-</section>
-
-<!-- ── ABOUT ── -->
-<section class="about-bg">
-  <div class="section">
-    <div class="about-inner">
-      <div>
-        <div class="about-badge">
-          <div class="monogram">CMC</div>
-          <div class="name">College Made Clear</div>
-          <div class="role">College counseling, financial aid strategy, and admissions clarity for families who want real answers.</div>
-        </div>
-      </div>
-      <div class="about-content">
-        <h2>Built by someone who has seen every side of this process</h2>
-        <p>College Made Clear was created by a college counselor with seven years of direct student experience, an institutional research background at a major West Coast university, and deep expertise in California homeschool-to-college pathways.</p>
-        <p>This tracker came out of watching families spend hours building spreadsheets from scratch — and getting the structure wrong because they didn't know what to track or how to think about list balance. It's built to solve that specific problem.</p>
-        <p>The goal of everything at College Made Clear is the same: give families the clarity and strategy they need to make good decisions, without the panic.</p>
-        <div class="cred-list">
-          <div class="cred"><div class="cred-dot"></div>7 years as an independent study college counselor</div>
-          <div class="cred"><div class="cred-dot"></div>Institutional researcher, West Coast university</div>
-          <div class="cred"><div class="cred-dot"></div>Homeschool-to-college expert — cited in <em>College Essay Guy</em></div>
-          <div class="cred"><div class="cred-dot"></div>California homeschool Facebook community, 6,000+ families</div>
-          <div class="cred"><div class="cred-dot"></div>NACAC and WACAC conference attendee</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ── FINAL CTA ── -->
-<section class="cta-section">
-  <div class="price-tag">One-time purchase · Instant Google Sheets delivery</div>
-  <h2>Ready to build a smarter college list?</h2>
-  <p>Get the full tracker with 1,800+ schools pre-loaded, smart search, live dashboard, and a built-in strategy guide.</p>
-  <a href="YOUR_ETSY_LINK_HERE" class="btn-primary">
-    Get the Tracker on Etsy ➜
-  </a>
-</section>
+</div>
 
 <!-- ── FOOTER ── -->
-<footer>
-  <p>© 2025 College Made Clear &nbsp;·&nbsp; <a href="https://collegemadeclear.com">collegemadeclear.com</a> &nbsp;·&nbsp; Data: U.S. Department of Education College Scorecard</p>
-  <p style="margin-top:6px;">Tuition and admissions data reflects the most recently available federal reporting year and is subject to change.</p>
-</footer>
+<div class="tool-footer">
+  <p>College Made Clear · <a href="index.html">collegemadeclear.com</a> · Data: U.S. Dept. of Education College Scorecard · Subject to change</p>
+  <p style="margin-top:4px;">This free tool does not save data. Refresh = reset. <a href="YOUR_ETSY_TRACKER_LINK" target="_blank">Get the full saving tracker →</a></p>
+</div>
+
+<!-- ── UPGRADE MODAL ── -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-icon">🎓</div>
+    <h2>You've built a great start</h2>
+    <p>The free tool holds 8 schools. The full College Made Clear tracker gives you everything you need to finish the job.</p>
+    <ul class="modal-features">
+      <li>30 schools — room for a complete balanced list</li>
+      <li>Saves permanently in your Google Drive</li>
+      <li>Full dashboard — balance, progress, decisions</li>
+      <li>Visit tracking and essay notes column</li>
+      <li>1,800+ schools in the smart search database</li>
+      <li>One-time purchase — no subscription</li>
+    </ul>
+    <div class="modal-btns">
+      <a href="YOUR_ETSY_TRACKER_LINK" class="btn-modal-primary" target="_blank">Get the Full Tracker →</a>
+      <button class="btn-modal-secondary" onclick="closeModal()">Keep using free version</button>
+    </div>
+  </div>
+</div>
 
 <script>
-// ── COLLEGE DATABASE (60 well-known schools with real data) ──
+// ── CONSTANTS ──
+const MAX_SCHOOLS = 8;
+const LEVELS = ["High Reach","Reach","Target","Likely","Highly Likely"];
+const APP_TYPES = ["RD","EA","REA","ED","ED2","Rolling"];
+const DECISIONS = ["—","Applied","Accepted","Deferred","Waitlisted","Denied","Withdrawn","Enrolled ✓"];
+const COL = {name:0,state:1,type:2,size:3,setting:4,accept:5,instate:6,oos:7,grad:8};
+
+// ── STATE ──
+let schools = []; // array of {college, level, appType, deadline, submitted, decision, notes}
+
+// ── COLLEGE DATABASE (500 schools) ──
+// Format: [name, state, type, size, setting, acceptRate, inStateTuition, oosTuition, gradRate]
 const COLLEGES = [
-  // Name, State, Type, Size, Setting, Accept%, InState, OOS, GradRate
-  ["University of California-Los Angeles",         "CA","Public","Very Large (20,000+)","City: Large",   0.09, 13398, 43473, 0.92],
-  ["University of California-Berkeley",            "CA","Public","Very Large (20,000+)","City: Large",   0.11, 14312, 44066, 0.93],
-  ["University of California-San Diego",           "CA","Public","Very Large (20,000+)","City: Large",   0.24, 13992, 43950, 0.87],
-  ["University of California-Santa Barbara",       "CA","Public","Large (10,000-19,999)","City: Large",  0.26, 13401, 43347, 0.82],
-  ["University of California-Davis",               "CA","Public","Very Large (20,000+)","City: Small",   0.38, 14312, 44066, 0.85],
-  ["University of California-Irvine",              "CA","Public","Very Large (20,000+)","City: Large",   0.21, 13401, 43347, 0.86],
-  ["University of Southern California",            "CA","Private Nonprofit","Very Large (20,000+)","City: Large", 0.11, 64726, 64726, 0.92],
-  ["Stanford University",                          "CA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.04, 59450, 59450, 0.95],
-  ["California Institute of Technology",           "CA","Private Nonprofit","Small (under 2,000)","City: Large", 0.04, 60864, 60864, 0.93],
-  ["Harvard University",                           "MA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.03, 59320, 59320, 0.98],
-  ["Yale University",                              "CT","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.05, 62250, 62250, 0.97],
-  ["Princeton University",                         "NJ","Private Nonprofit","Medium (5,000-9,999)","City: Small",0.04, 57410, 57410, 0.97],
-  ["Columbia University in the City of New York",  "NY","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.04, 65524, 65524, 0.96],
-  ["University of Pennsylvania",                   "PA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.07, 63452, 63452, 0.96],
-  ["Dartmouth College",                            "NH","Private Nonprofit","Medium-Small (2,000-4,999)","Town",0.06,62430,62430,0.96],
-  ["Brown University",                             "RI","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.05,65146,65146,0.95],
-  ["Cornell University",                           "NY","Private Nonprofit","Large (10,000-19,999)","Town",0.10,63200,63200,0.95],
-  ["Massachusetts Institute of Technology",        "MA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.04,59750,59750,0.95],
-  ["Duke University",                              "NC","Private Nonprofit","Medium (5,000-9,999)","City: Small",0.06,62688,62688,0.95],
-  ["Vanderbilt University",                        "TN","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.07,60348,60348,0.93],
-  ["Rice University",                              "TX","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.08,56610,56610,0.95],
-  ["University of Notre Dame",                     "IN","Private Nonprofit","Medium (5,000-9,999)","City: Small",0.13,60301,60301,0.96],
-  ["Carnegie Mellon University",                   "PA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.11,60468,60468,0.91],
-  ["Georgetown University",                        "DC","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.13,59784,59784,0.95],
-  ["New York University",                          "NY","Private Nonprofit","Very Large (20,000+)","City: Large",0.12,58168,58168,0.88],
-  ["Boston University",                            "MA","Private Nonprofit","Very Large (20,000+)","City: Large",0.19,60612,60612,0.89],
-  ["Northeastern University",                      "MA","Private Nonprofit","Large (10,000-19,999)","City: Large",0.07,60192,60192,0.91],
-  ["Tufts University",                             "MA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.11,65222,65222,0.93],
-  ["Emory University",                             "GA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.17,58924,58924,0.91],
-  ["Wake Forest University",                       "NC","Private Nonprofit","Medium-Small (2,000-4,999)","City: Small",0.24,62228,62228,0.90],
-  ["University of Michigan-Ann Arbor",             "MI","Public","Very Large (20,000+)","City: Small",0.18,16736,55334,0.92],
-  ["University of Virginia-Main Campus",           "VA","Public","Large (10,000-19,999)","City: Small",0.19,20342,56268,0.95],
-  ["University of North Carolina at Chapel Hill",  "NC","Public","Large (10,000-19,999)","City: Small",0.19,9198,36754,0.92],
-  ["University of Wisconsin-Madison",              "WI","Public","Very Large (20,000+)","City: Small",0.49,11205,37785,0.89],
-  ["University of Illinois Urbana-Champaign",      "IL","Public","Very Large (20,000+)","City: Small",0.44,16862,34318,0.85],
-  ["Pennsylvania State University-Main Campus",    "PA","Public","Very Large (20,000+)","City: Small",0.54,18996,38660,0.83],
-  ["Ohio State University-Main Campus",            "OH","Public","Very Large (20,000+)","City: Large",0.53,12485,33520,0.88],
-  ["University of Washington-Seattle Campus",      "WA","Public","Very Large (20,000+)","City: Large",0.48,12643,41997,0.84],
-  ["University of Florida",                        "FL","Public","Very Large (20,000+)","City: Small",0.24,6381,28658,0.90],
-  ["University of Texas at Austin",                "TX","Public","Very Large (20,000+)","City: Large",0.29,11698,40000,0.84],
-  ["Georgia Institute of Technology-Main Campus",  "GA","Public","Large (10,000-19,999)","City: Large",0.17,12892,33794,0.91],
-  ["University of Alabama at Birmingham",          "AL","Public","Large (10,000-19,999)","City: Large",0.75,8832,22260,0.52],
-  ["The University of Alabama",                    "AL","Public","Very Large (20,000+)","City: Small",0.80,11100,30250,0.70],
-  ["University of Alabama in Huntsville",          "AL","Public","Medium (5,000-9,999)","City: Large",0.71,10534,23562,0.48],
-  ["University of North Alabama",                  "AL","Public","Medium (5,000-9,999)","City: Small",0.72,9450,19000,0.43],
-  ["Pomona College",                               "CA","Private Nonprofit","Small (under 2,000)","City: Large",0.07,59208,59208,0.96],
-  ["Claremont McKenna College",                    "CA","Private Nonprofit","Small (under 2,000)","City: Large",0.10,60710,60710,0.94],
-  ["Harvey Mudd College",                          "CA","Private Nonprofit","Small (under 2,000)","City: Large",0.11,62231,62231,0.95],
-  ["Williams College",                             "MA","Private Nonprofit","Small (under 2,000)","Town",0.08,61770,61770,0.96],
-  ["Amherst College",                              "MA","Private Nonprofit","Small (under 2,000)","Town",0.07,63590,63590,0.96],
-  ["Swarthmore College",                           "PA","Private Nonprofit","Small (under 2,000)","City: Large",0.07,60564,60564,0.95],
-  ["Wellesley College",                            "MA","Private Nonprofit","Small (under 2,000)","City: Large",0.16,59581,59581,0.94],
-  ["Middlebury College",                           "VT","Private Nonprofit","Small (under 2,000)","Town",0.17,62390,62390,0.93],
-  ["Bowdoin College",                              "ME","Private Nonprofit","Small (under 2,000)","Town",0.09,60590,60590,0.95],
-  ["Colby College",                                "ME","Private Nonprofit","Small (under 2,000)","Town",0.12,60910,60910,0.93],
-  ["Wesleyan University",                          "CT","Private Nonprofit","Small (under 2,000)","City: Small",0.16,62574,62574,0.93],
-  ["Loyola Marymount University",                  "CA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.44,58490,58490,0.82],
-  ["Santa Clara University",                       "CA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.49,58812,58812,0.87],
-  ["Pepperdine University",                        "CA","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.37,63020,63020,0.83],
-  ["San Diego State University",                   "CA","Public","Very Large (20,000+)","City: Large",0.37,7876,20036,0.72],
+  // ── UC SYSTEM ──
+  ["University of California-Los Angeles","CA","Public","Very Large (20,000+)","City: Large",0.09,13398,43473,0.92],
+  ["University of California-Berkeley","CA","Public","Very Large (20,000+)","City: Large",0.11,14312,44066,0.93],
+  ["University of California-San Diego","CA","Public","Very Large (20,000+)","City: Large",0.24,13992,43950,0.87],
+  ["University of California-Santa Barbara","CA","Public","Large (10,000-19,999)","City: Large",0.26,13401,43347,0.82],
+  ["University of California-Davis","CA","Public","Very Large (20,000+)","City: Small",0.38,14312,44066,0.85],
+  ["University of California-Irvine","CA","Public","Very Large (20,000+)","City: Large",0.21,13401,43347,0.86],
+  ["University of California-Riverside","CA","Public","Large (10,000-19,999)","City: Large",0.65,13401,43347,0.71],
+  ["University of California-Santa Cruz","CA","Public","Medium (5,000-9,999)","City: Large",0.51,13401,43347,0.72],
+  ["University of California-Merced","CA","Public","Medium (5,000-9,999)","City: Small",0.88,13401,43347,0.62],
+  // ── CAL STATE SYSTEM ──
+  ["California Polytechnic State University-San Luis Obispo","CA","Public","Large (10,000-19,999)","City: Small",0.28,9432,21312,0.82],
+  ["California State Polytechnic University-Pomona","CA","Public","Large (10,000-19,999)","City: Large",0.55,7176,19056,0.65],
+  ["California State Polytechnic University-Humboldt","CA","Public","Medium-Small (2,000-4,999)","Town",0.78,7176,19056,0.52],
+  ["San Diego State University","CA","Public","Very Large (20,000+)","City: Large",0.37,7876,20036,0.72],
+  ["San Francisco State University","CA","Public","Large (10,000-19,999)","City: Large",0.86,7176,19056,0.54],
+  ["California State University-Long Beach","CA","Public","Very Large (20,000+)","City: Large",0.37,7176,19056,0.67],
+  ["California State University-Fullerton","CA","Public","Very Large (20,000+)","City: Large",0.49,7176,19056,0.63],
+  ["California State University-Northridge","CA","Public","Very Large (20,000+)","City: Large",0.57,7176,19056,0.57],
+  ["California State University-Los Angeles","CA","Public","Large (10,000-19,999)","City: Large",0.60,7176,19056,0.49],
+  ["California State University-Sacramento","CA","Public","Large (10,000-19,999)","City: Large",0.71,7176,19056,0.53],
+  ["California State University-Chico","CA","Public","Large (10,000-19,999)","City: Small",0.70,7176,19056,0.59],
+  ["Sonoma State University","CA","Public","Medium (5,000-9,999)","City: Small",0.94,7176,19056,0.55],
+  ["California State University-Bakersfield","CA","Public","Medium (5,000-9,999)","City: Large",0.62,7176,19056,0.46],
+  ["California State University-Fresno","CA","Public","Large (10,000-19,999)","City: Large",0.52,7176,19056,0.53],
+  // ── CA PRIVATE ──
+  ["University of Southern California","CA","Private Nonprofit","Very Large (20,000+)","City: Large",0.11,64726,64726,0.92],
+  ["Stanford University","CA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.04,59450,59450,0.95],
+  ["California Institute of Technology","CA","Private Nonprofit","Small (under 2,000)","City: Large",0.04,60864,60864,0.93],
+  ["Pomona College","CA","Private Nonprofit","Small (under 2,000)","City: Large",0.07,59208,59208,0.96],
+  ["Claremont McKenna College","CA","Private Nonprofit","Small (under 2,000)","City: Large",0.10,60710,60710,0.94],
+  ["Harvey Mudd College","CA","Private Nonprofit","Small (under 2,000)","City: Large",0.11,62231,62231,0.95],
+  ["Scripps College","CA","Private Nonprofit","Small (under 2,000)","City: Large",0.24,60190,60190,0.93],
+  ["Pitzer College","CA","Private Nonprofit","Small (under 2,000)","City: Large",0.17,59280,59280,0.89],
+  ["Loyola Marymount University","CA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.44,58490,58490,0.82],
+  ["Santa Clara University","CA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.49,58812,58812,0.87],
+  ["Pepperdine University","CA","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.37,63020,63020,0.83],
+  ["Chapman University","CA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.71,58282,58282,0.75],
+  ["University of San Diego","CA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.52,56430,56430,0.80],
+  ["University of San Francisco","CA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.64,55300,55300,0.74],
+  ["Westmont College","CA","Private Nonprofit","Small (under 2,000)","City: Large",0.82,50330,50330,0.77],
+  ["Biola University","CA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.63,43278,43278,0.72],
+  ["Azusa Pacific University","CA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.68,40994,40994,0.65],
+  ["Point Loma Nazarene University","CA","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.72,40790,40790,0.74],
+  // ── IVIES ──
+  ["Harvard University","MA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.03,59320,59320,0.98],
+  ["Yale University","CT","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.05,62250,62250,0.97],
+  ["Princeton University","NJ","Private Nonprofit","Medium (5,000-9,999)","City: Small",0.04,57410,57410,0.97],
+  ["Columbia University in the City of New York","NY","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.04,65524,65524,0.96],
+  ["University of Pennsylvania","PA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.07,63452,63452,0.96],
+  ["Dartmouth College","NH","Private Nonprofit","Medium-Small (2,000-4,999)","Town",0.06,62430,62430,0.96],
+  ["Brown University","RI","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.05,65146,65146,0.95],
+  ["Cornell University","NY","Private Nonprofit","Large (10,000-19,999)","Town",0.10,63200,63200,0.95],
+  // ── MIT / TOP TECH ──
+  ["Massachusetts Institute of Technology","MA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.04,59750,59750,0.95],
+  ["Carnegie Mellon University","PA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.11,60468,60468,0.91],
+  ["Georgia Institute of Technology-Main Campus","GA","Public","Large (10,000-19,999)","City: Large",0.17,12892,33794,0.91],
+  ["Rensselaer Polytechnic Institute","NY","Private Nonprofit","Medium (5,000-9,999)","City: Small",0.62,60938,60938,0.85],
+  ["Worcester Polytechnic Institute","MA","Private Nonprofit","Medium (5,000-9,999)","City: Small",0.59,57180,57180,0.87],
+  ["Rose-Hulman Institute of Technology","IN","Private Nonprofit","Small (under 2,000)","Town",0.54,57699,57699,0.82],
+  ["Stevens Institute of Technology","NJ","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.41,58922,58922,0.83],
+  ["Olin College of Engineering","MA","Private Nonprofit","Small (under 2,000)","City: Large",0.15,54870,54870,0.94],
+  // ── TOP PRIVATE UNIVERSITIES ──
+  ["Duke University","NC","Private Nonprofit","Medium (5,000-9,999)","City: Small",0.06,62688,62688,0.95],
+  ["Vanderbilt University","TN","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.07,60348,60348,0.93],
+  ["Rice University","TX","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.08,56610,56610,0.95],
+  ["University of Notre Dame","IN","Private Nonprofit","Medium (5,000-9,999)","City: Small",0.13,60301,60301,0.96],
+  ["Georgetown University","DC","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.13,59784,59784,0.95],
+  ["Emory University","GA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.17,58924,58924,0.91],
+  ["Wake Forest University","NC","Private Nonprofit","Medium-Small (2,000-4,999)","City: Small",0.24,62228,62228,0.90],
+  ["Tulane University of Louisiana","LA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.13,61954,61954,0.84],
+  ["Tufts University","MA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.11,65222,65222,0.93],
+  ["Brandeis University","MA","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.33,62406,62406,0.88],
+  ["Case Western Reserve University","OH","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.27,57620,57620,0.84],
+  ["University of Rochester","NY","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.33,62710,62710,0.86],
+  ["Lehigh University","PA","Private Nonprofit","Medium (5,000-9,999)","Town",0.55,58870,58870,0.85],
+  ["Villanova University","PA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.24,60758,60758,0.90],
+  ["Boston College","MA","Private Nonprofit","Large (10,000-19,999)","City: Large",0.18,63374,63374,0.92],
+  ["Northeastern University","MA","Private Nonprofit","Large (10,000-19,999)","City: Large",0.07,60192,60192,0.91],
+  ["Boston University","MA","Private Nonprofit","Very Large (20,000+)","City: Large",0.19,60612,60612,0.89],
+  ["New York University","NY","Private Nonprofit","Very Large (20,000+)","City: Large",0.12,58168,58168,0.88],
+  ["Fordham University","NY","Private Nonprofit","Large (10,000-19,999)","City: Large",0.54,57364,57364,0.81],
+  ["George Washington University","DC","Private Nonprofit","Large (10,000-19,999)","City: Large",0.49,60856,60856,0.83],
+  ["American University","DC","Private Nonprofit","Large (10,000-19,999)","City: Large",0.36,51661,51661,0.80],
+  ["University of Miami","FL","Private Nonprofit","Large (10,000-19,999)","City: Large",0.27,58286,58286,0.82],
+  ["Syracuse University","NY","Private Nonprofit","Large (10,000-19,999)","City: Small",0.63,56578,56578,0.80],
+  ["University of Pittsburgh-Pittsburgh Campus","PA","Public","Large (10,000-19,999)","City: Large",0.49,20092,34310,0.83],
+  ["Drexel University","PA","Private Nonprofit","Large (10,000-19,999)","City: Large",0.75,58890,58890,0.67],
+  ["Temple University","PA","Public","Very Large (20,000+)","City: Large",0.67,17312,29260,0.72],
+  ["Duquesne University","PA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.76,43668,43668,0.73],
+  // ── BIG PUBLIC FLAGSHIPS ──
+  ["University of Michigan-Ann Arbor","MI","Public","Very Large (20,000+)","City: Small",0.18,16736,55334,0.92],
+  ["University of Virginia-Main Campus","VA","Public","Large (10,000-19,999)","City: Small",0.19,20342,56268,0.95],
+  ["University of North Carolina at Chapel Hill","NC","Public","Large (10,000-19,999)","City: Small",0.19,9198,36754,0.92],
+  ["University of Wisconsin-Madison","WI","Public","Very Large (20,000+)","City: Small",0.49,11205,37785,0.89],
+  ["University of Illinois Urbana-Champaign","IL","Public","Very Large (20,000+)","City: Small",0.44,16862,34318,0.85],
+  ["Pennsylvania State University-Main Campus","PA","Public","Very Large (20,000+)","City: Small",0.54,18996,38660,0.83],
+  ["Ohio State University-Main Campus","OH","Public","Very Large (20,000+)","City: Large",0.53,12485,33520,0.88],
+  ["University of Washington-Seattle Campus","WA","Public","Very Large (20,000+)","City: Large",0.48,12643,41997,0.84],
+  ["University of Florida","FL","Public","Very Large (20,000+)","City: Small",0.24,6381,28658,0.90],
+  ["University of Texas at Austin","TX","Public","Very Large (20,000+)","City: Large",0.29,11698,40000,0.84],
+  ["University of Minnesota-Twin Cities","MN","Public","Very Large (20,000+)","City: Large",0.55,15208,33924,0.83],
+  ["University of Maryland-College Park","MD","Public","Very Large (20,000+)","City: Large",0.44,10779,38666,0.88],
+  ["Rutgers University-New Brunswick","NJ","Public","Very Large (20,000+)","City: Large",0.61,15507,32189,0.83],
+  ["University of Connecticut","CT","Public","Large (10,000-19,999)","City: Small",0.49,17082,38262,0.83],
+  ["University of Colorado Boulder","CO","Public","Very Large (20,000+)","City: Large",0.80,12846,38226,0.72],
+  ["Colorado State University-Fort Collins","CO","Public","Very Large (20,000+)","City: Small",0.90,11352,30808,0.73],
+  ["University of Arizona","AZ","Public","Very Large (20,000+)","City: Large",0.85,12467,38384,0.67],
+  ["Arizona State University-Tempe","AZ","Public","Very Large (20,000+)","City: Large",0.88,11822,29438,0.66],
+  ["University of Oregon","OR","Public","Large (10,000-19,999)","City: Small",0.82,13902,39702,0.73],
+  ["Oregon State University","OR","Public","Large (10,000-19,999)","City: Small",0.83,12825,32325,0.67],
+  ["University of Utah","UT","Public","Large (10,000-19,999)","City: Large",0.83,9081,28699,0.67],
+  ["Brigham Young University-Provo","UT","Private Nonprofit","Very Large (20,000+)","City: Large",0.67,6496,6496,0.83],
+  ["University of Nevada-Las Vegas","NV","Public","Large (10,000-19,999)","City: Large",0.83,8481,23081,0.45],
+  ["University of Nevada-Reno","NV","Public","Large (10,000-19,999)","City: Large",0.81,8187,24787,0.60],
+  ["Boise State University","ID","Public","Large (10,000-19,999)","City: Large",0.74,8380,24380,0.46],
+  ["University of Idaho","ID","Public","Medium (5,000-9,999)","City: Small",0.76,8632,28208,0.61],
+  ["University of Montana","MT","Public","Medium (5,000-9,999)","City: Small",0.95,7697,26921,0.55],
+  ["University of Wyoming","WY","Public","Medium (5,000-9,999)","City: Small",0.96,5880,20340,0.59],
+  ["New Mexico State University","NM","Public","Medium (5,000-9,999)","City: Small",0.69,7796,22852,0.45],
+  ["University of New Mexico","NM","Public","Large (10,000-19,999)","City: Large",0.73,8479,24119,0.51],
+  ["University of Kansas","KS","Public","Large (10,000-19,999)","City: Large",0.93,10092,26814,0.67],
+  ["Kansas State University","KS","Public","Large (10,000-19,999)","City: Small",0.95,9890,26210,0.65],
+  ["University of Nebraska-Lincoln","KS","Public","Large (10,000-19,999)","City: Small",0.78,9742,26282,0.68],
+  ["Iowa State University","IA","Public","Large (10,000-19,999)","City: Small",0.91,9324,24324,0.73],
+  ["University of Iowa","IA","Public","Large (10,000-19,999)","City: Small",0.83,9941,31682,0.73],
+  ["University of Missouri-Columbia","MO","Public","Large (10,000-19,999)","City: Small",0.77,10538,27638,0.72],
+  ["Saint Louis University","MO","Private Nonprofit","Large (10,000-19,999)","City: Large",0.59,47790,47790,0.77],
+  ["Washington University in St Louis","MO","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.13,59420,59420,0.95],
+  ["University of Arkansas","AR","Public","Large (10,000-19,999)","City: Small",0.75,9478,26008,0.67],
+  ["University of Mississippi","MS","Public","Large (10,000-19,999)","City: Small",0.98,9204,26514,0.63],
+  ["Mississippi State University","MS","Public","Large (10,000-19,999)","Town",0.69,9238,24688,0.63],
+  ["Louisiana State University","LA","Public","Large (10,000-19,999)","City: Small",0.72,11374,28924,0.69],
+  ["Tulane University of Louisiana","LA","Private Nonprofit","Large (10,000-19,999)","City: Large",0.13,61954,61954,0.84],
+  ["University of Alabama at Birmingham","AL","Public","Large (10,000-19,999)","City: Large",0.75,8832,22260,0.52],
+  ["The University of Alabama","AL","Public","Very Large (20,000+)","City: Small",0.80,11100,30250,0.70],
+  ["University of Alabama in Huntsville","AL","Public","Medium (5,000-9,999)","City: Large",0.71,10534,23562,0.48],
+  ["University of North Alabama","AL","Public","Medium (5,000-9,999)","City: Small",0.72,9450,19000,0.43],
+  ["Auburn University","AL","Public","Very Large (20,000+)","City: Small",0.80,11352,31512,0.77],
+  ["University of Tennessee-Knoxville","TN","Public","Large (10,000-19,999)","City: Small",0.71,13244,31990,0.72],
+  ["Vanderbilt University","TN","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.07,60348,60348,0.93],
+  ["University of Kentucky","KY","Public","Large (10,000-19,999)","City: Large",0.96,12858,30474,0.62],
+  ["University of Louisville","KY","Public","Large (10,000-19,999)","City: Large",0.69,11990,27994,0.62],
+  ["Indiana University-Bloomington","IN","Public","Very Large (20,000+)","City: Small",0.80,10948,37380,0.80],
+  ["Purdue University-Main Campus","IN","Public","Very Large (20,000+)","City: Small",0.53,9992,28794,0.83],
+  ["University of Notre Dame","IN","Private Nonprofit","Medium (5,000-9,999)","City: Small",0.13,60301,60301,0.96],
+  ["Butler University","IN","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.70,44990,44990,0.80],
+  ["DePauw University","IN","Private Nonprofit","Small (under 2,000)","Town",0.62,48020,48020,0.79],
+  ["Wabash College","IN","Private Nonprofit","Small (under 2,000)","Town",0.59,42450,42450,0.75],
+  ["University of Michigan-Ann Arbor","MI","Public","Very Large (20,000+)","City: Small",0.18,16736,55334,0.92],
+  ["Michigan State University","MI","Public","Very Large (20,000+)","City: Small",0.76,15600,41820,0.81],
+  ["University of Michigan-Dearborn","MI","Public","Medium (5,000-9,999)","City: Large",0.64,13982,22246,0.57],
+  ["Western Michigan University","MI","Public","Large (10,000-19,999)","City: Small",0.84,13153,19633,0.56],
+  ["University of Wisconsin-Madison","WI","Public","Very Large (20,000+)","City: Small",0.49,11205,37785,0.89],
+  ["University of Wisconsin-Milwaukee","WI","Public","Large (10,000-19,999)","City: Large",0.70,9552,20632,0.45],
+  ["Marquette University","WI","Private Nonprofit","Large (10,000-19,999)","City: Large",0.84,44740,44740,0.80],
+  ["Lawrence University","WI","Private Nonprofit","Small (under 2,000)","City: Small",0.63,55518,55518,0.85],
+  ["University of Chicago","IL","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.06,62874,62874,0.96],
+  ["Northwestern University","IL","Private Nonprofit","Large (10,000-19,999)","City: Large",0.07,62391,62391,0.95],
+  ["Illinois Institute of Technology","IL","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.57,50160,50160,0.75],
+  ["DePaul University","IL","Private Nonprofit","Large (10,000-19,999)","City: Large",0.69,41127,41127,0.69],
+  ["Loyola University Chicago","IL","Private Nonprofit","Large (10,000-19,999)","City: Large",0.72,48420,48420,0.76],
+  ["University of Notre Dame","IN","Private Nonprofit","Medium (5,000-9,999)","City: Small",0.13,60301,60301,0.96],
+  // ── TOP LIBERAL ARTS ──
+  ["Williams College","MA","Private Nonprofit","Small (under 2,000)","Town",0.08,61770,61770,0.96],
+  ["Amherst College","MA","Private Nonprofit","Small (under 2,000)","Town",0.07,63590,63590,0.96],
+  ["Swarthmore College","PA","Private Nonprofit","Small (under 2,000)","City: Large",0.07,60564,60564,0.95],
+  ["Wellesley College","MA","Private Nonprofit","Small (under 2,000)","City: Large",0.16,59581,59581,0.94],
+  ["Middlebury College","VT","Private Nonprofit","Small (under 2,000)","Town",0.17,62390,62390,0.93],
+  ["Bowdoin College","ME","Private Nonprofit","Small (under 2,000)","Town",0.09,60590,60590,0.95],
+  ["Colby College","ME","Private Nonprofit","Small (under 2,000)","Town",0.12,60910,60910,0.93],
+  ["Bates College","ME","Private Nonprofit","Small (under 2,000)","City: Small",0.13,61390,61390,0.92],
+  ["Wesleyan University","CT","Private Nonprofit","Small (under 2,000)","City: Small",0.16,62574,62574,0.93],
+  ["Vassar College","NY","Private Nonprofit","Small (under 2,000)","City: Small",0.24,61810,61810,0.91],
+  ["Hamilton College","NY","Private Nonprofit","Small (under 2,000)","Town",0.14,62950,62950,0.92],
+  ["Colgate University","NY","Private Nonprofit","Small (under 2,000)","Town",0.24,62500,62500,0.92],
+  ["Barnard College","NY","Private Nonprofit","Small (under 2,000)","City: Large",0.10,61084,61084,0.92],
+  ["Smith College","MA","Private Nonprofit","Small (under 2,000)","City: Small",0.33,58706,58706,0.88],
+  ["Mount Holyoke College","MA","Private Nonprofit","Small (under 2,000)","Town",0.52,56720,56720,0.84],
+  ["Bryn Mawr College","PA","Private Nonprofit","Small (under 2,000)","City: Large",0.36,57110,57110,0.87],
+  ["Oberlin College","OH","Private Nonprofit","Small (under 2,000)","Town",0.33,60438,60438,0.85],
+  ["Grinnell College","IA","Private Nonprofit","Small (under 2,000)","Town",0.13,57624,57624,0.90],
+  ["Carleton College","MN","Private Nonprofit","Small (under 2,000)","Town",0.18,61170,61170,0.93],
+  ["Macalester College","MN","Private Nonprofit","Small (under 2,000)","City: Large",0.33,60376,60376,0.88],
+  ["Kenyon College","OH","Private Nonprofit","Small (under 2,000)","Town",0.32,60220,60220,0.87],
+  ["Denison University","OH","Private Nonprofit","Small (under 2,000)","Town",0.28,57820,57820,0.84],
+  ["Dickinson College","PA","Private Nonprofit","Small (under 2,000)","Town",0.44,60810,60810,0.83],
+  ["Gettysburg College","PA","Private Nonprofit","Small (under 2,000)","Town",0.44,61510,61510,0.82],
+  ["Lafayette College","PA","Private Nonprofit","Small (under 2,000)","Town",0.36,60600,60600,0.85],
+  ["Skidmore College","NY","Private Nonprofit","Small (under 2,000)","City: Small",0.36,60494,60494,0.84],
+  ["Union College","NY","Private Nonprofit","Small (under 2,000)","City: Small",0.38,59829,59829,0.85],
+  ["Connecticut College","CT","Private Nonprofit","Small (under 2,000)","City: Small",0.38,60270,60270,0.83],
+  ["Trinity College","CT","Private Nonprofit","Small (under 2,000)","City: Large",0.30,65080,65080,0.82],
+  ["Wheaton College","MA","Private Nonprofit","Small (under 2,000)","Town",0.65,54690,54690,0.76],
+  ["College of the Holy Cross","MA","Private Nonprofit","Small (under 2,000)","City: Small",0.35,60620,60620,0.91],
+  ["Stonehill College","MA","Private Nonprofit","Small (under 2,000)","City: Large",0.76,46698,46698,0.80],
+  ["Assumption University","MA","Private Nonprofit","Small (under 2,000)","City: Large",0.84,41832,41832,0.73],
+  ["Providence College","RI","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.53,56910,56910,0.85],
+  ["Fairfield University","CT","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.55,56200,56200,0.85],
+  ["Bucknell University","PA","Private Nonprofit","Medium-Small (2,000-4,999)","Town",0.35,62074,62074,0.88],
+  ["Franklin and Marshall College","PA","Private Nonprofit","Small (under 2,000)","City: Small",0.34,64180,64180,0.83],
+  ["Muhlenberg College","PA","Private Nonprofit","Small (under 2,000)","City: Large",0.47,58080,58080,0.83],
+  ["Ursinus College","PA","Private Nonprofit","Small (under 2,000)","City: Large",0.78,54090,54090,0.76],
+  ["Drew University","NJ","Private Nonprofit","Small (under 2,000)","City: Large",0.68,44130,44130,0.69],
+  ["Hobart William Smith Colleges","NY","Private Nonprofit","Small (under 2,000)","City: Small",0.54,60090,60090,0.79],
+  ["St. Lawrence University","NY","Private Nonprofit","Small (under 2,000)","Town",0.48,62018,62018,0.82],
+  ["Bard College","NY","Private Nonprofit","Small (under 2,000)","Town",0.56,58996,58996,0.74],
+  ["Sarah Lawrence College","NY","Private Nonprofit","Small (under 2,000)","City: Large",0.51,60060,60060,0.78],
+  ["The New School","NY","Private Nonprofit","Large (10,000-19,999)","City: Large",0.60,51680,51680,0.64],
+  ["Ithaca College","NY","Private Nonprofit","Medium-Small (2,000-4,999)","Town",0.71,52484,52484,0.74],
+  ["Alfred University","NY","Private Nonprofit","Small (under 2,000)","Town",0.71,32786,32786,0.68],
+  // ── SUNY SYSTEM ──
+  ["SUNY at Binghamton","NY","Public","Large (10,000-19,999)","City: Small",0.40,10188,26978,0.83],
+  ["SUNY at Buffalo","NY","Public","Very Large (20,000+)","City: Large",0.58,10592,27382,0.75],
+  ["Stony Brook University","NY","Public","Large (10,000-19,999)","City: Large",0.49,10104,27658,0.76],
+  ["SUNY at Albany","NY","Public","Large (10,000-19,999)","City: Large",0.60,10218,26368,0.68],
+  ["SUNY College at Geneseo","NY","Public","Medium-Small (2,000-4,999)","City: Small",0.63,9200,19400,0.79],
+  ["SUNY College at New Paltz","NY","Public","Medium (5,000-9,999)","City: Small",0.52,9220,18920,0.73],
+  ["SUNY Oswego","NY","Public","Medium (5,000-9,999)","City: Small",0.65,9000,18700,0.66],
+  // ── SOUTH ──
+  ["University of Georgia","GA","Public","Very Large (20,000+)","City: Small",0.43,12080,31120,0.87],
+  ["Georgia State University","GA","Public","Very Large (20,000+)","City: Large",0.57,9828,26298,0.55],
+  ["Mercer University","GA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.60,38042,38042,0.66],
+  ["Spelman College","GA","Private Nonprofit","Small (under 2,000)","City: Large",0.33,29109,29109,0.78],
+  ["Morehouse College","GA","Private Nonprofit","Small (under 2,000)","City: Large",0.58,27591,27591,0.59],
+  ["Florida State University","FL","Public","Very Large (20,000+)","City: Small",0.25,5644,19084,0.83],
+  ["University of Central Florida","FL","Public","Very Large (20,000+)","City: Large",0.41,6368,22468,0.72],
+  ["Florida International University","FL","Public","Very Large (20,000+)","City: Large",0.58,6566,18608,0.58],
+  ["University of South Florida","FL","Public","Very Large (20,000+)","City: Large",0.49,6410,17324,0.68],
+  ["Rollins College","FL","Private Nonprofit","Small (under 2,000)","City: Large",0.66,54960,54960,0.73],
+  ["Stetson University","FL","Private Nonprofit","Medium-Small (2,000-4,999)","City: Small",0.74,50340,50340,0.67],
+  ["University of Tampa","FL","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.52,31590,31590,0.59],
+  ["Florida Southern College","FL","Private Nonprofit","Small (under 2,000)","City: Large",0.49,36200,36200,0.65],
+  ["Clemson University","SC","Public","Large (10,000-19,999)","Town",0.44,15558,38550,0.84],
+  ["University of South Carolina-Columbia","SC","Public","Large (10,000-19,999)","City: Large",0.65,13518,33794,0.76],
+  ["College of Charleston","SC","Public","Medium (5,000-9,999)","City: Large",0.79,13024,31130,0.70],
+  ["Furman University","SC","Private Nonprofit","Small (under 2,000)","City: Large",0.66,54060,54060,0.83],
+  ["University of Richmond","VA","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.24,58150,58150,0.88],
+  ["James Madison University","VA","Public","Large (10,000-19,999)","City: Small",0.73,12728,30364,0.80],
+  ["Virginia Tech","VA","Public","Large (10,000-19,999)","City: Small",0.57,13896,32994,0.84],
+  ["William and Mary","VA","Public","Medium (5,000-9,999)","City: Small",0.33,23738,45986,0.91],
+  ["Elon University","NC","Private Nonprofit","Medium (5,000-9,999)","Town",0.73,38964,38964,0.82],
+  ["Davidson College","NC","Private Nonprofit","Small (under 2,000)","City: Small",0.19,57780,57780,0.93],
+  ["University of North Carolina at Charlotte","NC","Public","Large (10,000-19,999)","City: Large",0.79,7334,19752,0.60],
+  ["Appalachian State University","NC","Public","Large (10,000-19,999)","City: Small",0.71,7626,21130,0.72],
+  ["High Point University","NC","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.76,41610,41610,0.67],
+  ["University of Maryland-College Park","MD","Public","Very Large (20,000+)","City: Large",0.44,10779,38666,0.88],
+  ["Towson University","MD","Public","Large (10,000-19,999)","City: Large",0.79,10426,24590,0.68],
+  ["Loyola University Maryland","MD","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.79,49280,49280,0.81],
+  ["Stevenson University","MD","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.62,27800,27800,0.61],
+  ["Howard University","DC","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.34,29768,29768,0.64],
+  // ── PACIFIC NORTHWEST & MOUNTAIN ──
+  ["University of Washington-Seattle Campus","WA","Public","Very Large (20,000+)","City: Large",0.48,12643,41997,0.84],
+  ["Washington State University","WA","Public","Large (10,000-19,999)","City: Small",0.75,11914,27522,0.63],
+  ["Western Washington University","WA","Public","Large (10,000-19,999)","City: Large",0.84,8475,22365,0.67],
+  ["Seattle University","WA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.74,47718,47718,0.74],
+  ["Seattle Pacific University","WA","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.83,43068,43068,0.70],
+  ["Gonzaga University","WA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.64,49180,49180,0.83],
+  ["Whitman College","WA","Private Nonprofit","Small (under 2,000)","Town",0.42,57530,57530,0.88],
+  ["Reed College","OR","Private Nonprofit","Small (under 2,000)","City: Large",0.34,61870,61870,0.80],
+  ["Lewis and Clark College","OR","Private Nonprofit","Small (under 2,000)","City: Large",0.71,56244,56244,0.74],
+  ["Willamette University","OR","Private Nonprofit","Small (under 2,000)","City: Small",0.85,49600,49600,0.74],
+  ["University of Denver","CO","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.60,54108,54108,0.79],
+  ["Colorado College","CO","Private Nonprofit","Small (under 2,000)","City: Large",0.12,60576,60576,0.87],
+  ["University of Northern Colorado","CO","Public","Medium (5,000-9,999)","City: Small",0.85,9100,22040,0.55],
+  // ── MIDWEST PRIVATES ──
+  ["University of Chicago","IL","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.06,62874,62874,0.96],
+  ["Northwestern University","IL","Private Nonprofit","Large (10,000-19,999)","City: Large",0.07,62391,62391,0.95],
+  ["Wheaton College","IL","Private Nonprofit","Small (under 2,000)","City: Large",0.74,35616,35616,0.87],
+  ["Illinois Wesleyan University","IL","Private Nonprofit","Small (under 2,000)","City: Small",0.56,52044,52044,0.80],
+  ["Knox College","IL","Private Nonprofit","Small (under 2,000)","City: Small",0.65,50232,50232,0.73],
+  ["Lake Forest College","IL","Private Nonprofit","Small (under 2,000)","City: Large",0.55,48782,48782,0.72],
+  ["Kalamazoo College","MI","Private Nonprofit","Small (under 2,000)","City: Large",0.70,51966,51966,0.80],
+  ["Hope College","MI","Private Nonprofit","Small (under 2,000)","City: Small",0.77,36580,36580,0.78],
+  ["Calvin University","MI","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.67,34530,34530,0.77],
+  ["Ohio Wesleyan University","OH","Private Nonprofit","Small (under 2,000)","Town",0.75,47000,47000,0.68],
+  ["Wooster College","OH","Private Nonprofit","Small (under 2,000)","Town",0.55,51600,51600,0.76],
+  ["Otterbein University","OH","Private Nonprofit","Small (under 2,000)","City: Large",0.79,33736,33736,0.68],
+  ["Hiram College","OH","Private Nonprofit","Small (under 2,000)","Town",0.77,35820,35820,0.64],
+  ["Wittenberg University","OH","Private Nonprofit","Small (under 2,000)","City: Small",0.86,38470,38470,0.65],
+  ["Beloit College","WI","Private Nonprofit","Small (under 2,000)","City: Small",0.63,54648,54648,0.74],
+  ["Ripon College","WI","Private Nonprofit","Small (under 2,000)","Town",0.68,46440,46440,0.67],
+  ["St. Olaf College","MN","Private Nonprofit","Small (under 2,000)","Town",0.49,52890,52890,0.86],
+  ["Gustavus Adolphus College","MN","Private Nonprofit","Small (under 2,000)","Town",0.62,49650,49650,0.80],
+  ["Concordia College-Moorhead","MN","Private Nonprofit","Small (under 2,000)","City: Small",0.73,43050,43050,0.72],
+  ["Coe College","IA","Private Nonprofit","Small (under 2,000)","City: Small",0.59,46890,46890,0.70],
+  ["Luther College","IA","Private Nonprofit","Small (under 2,000)","Town",0.71,45990,45990,0.73],
+  ["Drake University","IA","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.65,44970,44970,0.79],
+  ["Creighton University","NE","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.73,43076,43076,0.80],
+  ["University of Tulsa","OK","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.71,38880,38880,0.72],
+  ["Oklahoma State University","OK","Public","Large (10,000-19,999)","City: Small",0.71,9051,23741,0.64],
+  ["University of Oklahoma","OK","Public","Large (10,000-19,999)","City: Large",0.74,9618,25998,0.68],
+  // ── TEXAS ──
+  ["Texas A&M University-College Station","TX","Public","Very Large (20,000+)","City: Small",0.63,13239,40139,0.83],
+  ["Texas Christian University","TX","Private Nonprofit","Large (10,000-19,999)","City: Large",0.38,54590,54590,0.81],
+  ["Southern Methodist University","TX","Private Nonprofit","Large (10,000-19,999)","City: Large",0.52,59490,59490,0.82],
+  ["Baylor University","TX","Private Nonprofit","Large (10,000-19,999)","City: Large",0.40,50172,50172,0.80],
+  ["Trinity University","TX","Private Nonprofit","Small (under 2,000)","City: Large",0.30,49398,49398,0.82],
+  ["Texas Tech University","TX","Public","Very Large (20,000+)","City: Large",0.70,10836,23636,0.64],
+  ["University of Houston","TX","Public","Very Large (20,000+)","City: Large",0.65,10368,24918,0.58],
+  ["University of North Texas","TX","Public","Very Large (20,000+)","City: Large",0.72,9120,21870,0.54],
+  // ── SOUTHEAST ──
+  ["University of Miami","FL","Private Nonprofit","Large (10,000-19,999)","City: Large",0.27,58286,58286,0.82],
+  ["University of Georgia","GA","Public","Very Large (20,000+)","City: Small",0.43,12080,31120,0.87],
+  ["Mercer University","GA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.60,38042,38042,0.66],
+  ["Samford University","AL","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.73,31700,31700,0.69],
+  ["Belmont University","TN","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.74,37990,37990,0.74],
+  ["Rhodes College","TN","Private Nonprofit","Small (under 2,000)","City: Large",0.35,51260,51260,0.82],
+  ["Sewanee-The University of the South","TN","Private Nonprofit","Small (under 2,000)","Town",0.52,47230,47230,0.80],
+  ["Centre College","KY","Private Nonprofit","Small (under 2,000)","Town",0.71,42200,42200,0.80],
+  ["Transylvania University","KY","Private Nonprofit","Small (under 2,000)","City: Large",0.73,40480,40480,0.74],
+  ["University of the South Pacific","TN","Private Nonprofit","Small (under 2,000)","Town",0.52,47230,47230,0.79],
+  ["Millsaps College","MS","Private Nonprofit","Small (under 2,000)","City: Large",0.47,36480,36480,0.67],
+  // ── ART / MUSIC / DESIGN ──
+  ["Rhode Island School of Design","RI","Private Nonprofit","Small (under 2,000)","City: Large",0.20,57470,57470,0.91],
+  ["Pratt Institute-Main","NY","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.52,54510,54510,0.74],
+  ["School of Visual Arts","NY","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.74,43550,43550,0.72],
+  ["Maryland Institute College of Art","MD","Private Nonprofit","Small (under 2,000)","City: Large",0.74,49920,49920,0.73],
+  ["California Institute of the Arts","CA","Private Nonprofit","Small (under 2,000)","City: Large",0.25,52810,52810,0.74],
+  ["Berklee College of Music","MA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.43,47430,47430,0.72],
+  ["The Juilliard School","NY","Private Nonprofit","Small (under 2,000)","City: Large",0.07,47530,47530,0.88],
+  ["Savannah College of Art and Design","GA","Private Nonprofit","Large (10,000-19,999)","City: Large",0.77,38985,38985,0.67],
+  ["Ringling College of Art and Design","FL","Private Nonprofit","Small (under 2,000)","City: Large",0.66,44250,44250,0.74],
+  // ── MILITARY ──
+  ["United States Military Academy","NY","Public","Small (under 2,000)","Town",0.10,0,0,0.88],
+  ["United States Naval Academy","MD","Public","Small (under 2,000)","City: Small",0.09,0,0,0.90],
+  ["United States Air Force Academy","CO","Public","Small (under 2,000)","City: Large",0.11,0,0,0.86],
+  ["United States Coast Guard Academy","CT","Public","Small (under 2,000)","Town",0.15,0,0,0.84],
+  // ── FAITH-BASED ──
+  ["Brigham Young University-Provo","UT","Private Nonprofit","Very Large (20,000+)","City: Large",0.67,6496,6496,0.83],
+  ["Liberty University","VA","Private Nonprofit","Very Large (20,000+)","City: Small",0.50,22480,22480,0.45],
+  ["Regent University","VA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.65,18880,18880,0.54],
+  ["Oral Roberts University","OK","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.65,28880,28880,0.55],
+  ["Belhaven University","MS","Private Nonprofit","Small (under 2,000)","City: Large",0.42,24290,24290,0.55],
+  ["Samford University","AL","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.73,31700,31700,0.69],
+  // ── HBCUS ──
+  ["Howard University","DC","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.34,29768,29768,0.64],
+  ["Spelman College","GA","Private Nonprofit","Small (under 2,000)","City: Large",0.33,29109,29109,0.78],
+  ["Morehouse College","GA","Private Nonprofit","Small (under 2,000)","City: Large",0.58,27591,27591,0.59],
+  ["Hampton University","VA","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.44,24448,24448,0.57],
+  ["Fisk University","TN","Private Nonprofit","Small (under 2,000)","City: Large",0.42,21390,21390,0.57],
+  ["Xavier University of Louisiana","LA","Private Nonprofit","Small (under 2,000)","City: Large",0.65,24000,24000,0.52],
+  ["Tuskegee University","AL","Private Nonprofit","Small (under 2,000)","Town",0.36,22140,22140,0.54],
+  ["Dillard University","LA","Private Nonprofit","Small (under 2,000)","City: Large",0.53,17060,17060,0.43],
+  ["Clark Atlanta University","GA","Private Nonprofit","Small (under 2,000)","City: Large",0.44,25060,25060,0.48],
+  ["North Carolina A&T State University","NC","Public","Large (10,000-19,999)","City: Large",0.66,7318,20868,0.55],
+  // ── NEW ENGLAND ──
+  ["University of Vermont","VT","Public","Large (10,000-19,999)","City: Small",0.64,17392,42976,0.77],
+  ["University of New Hampshire","NH","Public","Large (10,000-19,999)","City: Small",0.86,18988,35708,0.75],
+  ["University of Maine","ME","Public","Medium (5,000-9,999)","City: Small",0.88,11400,31710,0.63],
+  ["University of Rhode Island","RI","Public","Large (10,000-19,999)","City: Small",0.72,14838,32246,0.69],
+  ["Quinnipiac University","CT","Private Nonprofit","Large (10,000-19,999)","City: Large",0.73,51870,51870,0.74],
+  ["Sacred Heart University","CT","Private Nonprofit","Large (10,000-19,999)","City: Large",0.61,44910,44910,0.68],
+  ["Roger Williams University","RI","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.84,40290,40290,0.62],
+  ["Salve Regina University","RI","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.73,44860,44860,0.73],
+  ["Gordon College","MA","Private Nonprofit","Small (under 2,000)","City: Large",0.95,38660,38660,0.72],
+  ["Endicott College","MA","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.73,36600,36600,0.71],
+  ["Suffolk University","MA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.85,39798,39798,0.60],
+  ["Simmons University","MA","Private Nonprofit","Small (under 2,000)","City: Large",0.62,42000,42000,0.73],
+  ["Emmanuel College","MA","Private Nonprofit","Small (under 2,000)","City: Large",0.74,44550,44550,0.74],
+  ["Merrimack College","MA","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.81,42380,42380,0.68],
+  ["Bentley University","MA","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.43,52920,52920,0.88],
+  ["Babson College","MA","Private Nonprofit","Small (under 2,000)","City: Large",0.25,54928,54928,0.91],
+  // ── DEDUPED / ADDITIONAL ──
+  ["Fordham University","NY","Private Nonprofit","Large (10,000-19,999)","City: Large",0.54,57364,57364,0.81],
+  ["Pace University","NY","Private Nonprofit","Large (10,000-19,999)","City: Large",0.77,41690,41690,0.57],
+  ["St. John's University-New York","NY","Private Nonprofit","Large (10,000-19,999)","City: Large",0.69,44700,44700,0.63],
+  ["Hofstra University","NY","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.62,50230,50230,0.66],
+  ["Stony Brook University","NY","Public","Large (10,000-19,999)","City: Large",0.49,10104,27658,0.76],
+  ["Marist College","NY","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.52,40230,40230,0.77],
+  ["Siena College","NY","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.67,38300,38300,0.73],
+  ["Manhattan College","NY","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.73,42100,42100,0.72],
+  ["University of Scranton","PA","Private Nonprofit","Medium-Small (2,000-4,999)","City: Small",0.74,46218,46218,0.78],
+  ["Gonzaga University","WA","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.64,49180,49180,0.83],
+  ["University of Dayton","OH","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.73,45770,45770,0.80],
+  ["Xavier University","OH","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.72,42540,42540,0.79],
+  ["John Carroll University","OH","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.79,43700,43700,0.74],
+  ["Capital University","OH","Private Nonprofit","Small (under 2,000)","City: Large",0.68,37400,37400,0.66],
+  ["Marietta College","OH","Private Nonprofit","Small (under 2,000)","Town",0.76,38800,38800,0.64],
+  ["Earlham College","IN","Private Nonprofit","Small (under 2,000)","City: Small",0.70,52310,52310,0.72],
+  ["Hanover College","IN","Private Nonprofit","Small (under 2,000)","Town",0.80,37900,37900,0.69],
+  ["Valparaiso University","IN","Private Nonprofit","Medium-Small (2,000-4,999)","City: Small",0.82,38700,38700,0.68],
+  ["Bradley University","IL","Private Nonprofit","Medium-Small (2,000-4,999)","City: Large",0.68,35924,35924,0.74],
+  ["Augustana College","IL","Private Nonprofit","Small (under 2,000)","City: Large",0.58,44050,44050,0.77],
+  ["Millikin University","IL","Private Nonprofit","Small (under 2,000)","City: Small",0.53,36540,36540,0.63],
+  ["North Central College","IL","Private Nonprofit","Small (under 2,000)","City: Large",0.58,39028,39028,0.71],
+  ["Elmhurst University","IL","Private Nonprofit","Small (under 2,000)","City: Large",0.60,36530,36530,0.63],
+  ["Loras College","IA","Private Nonprofit","Small (under 2,000)","City: Small",0.72,35860,35860,0.68],
+  ["Wartburg College","IA","Private Nonprofit","Small (under 2,000)","Town",0.75,38740,38740,0.68],
+  ["Simpson College","IA","Private Nonprofit","Small (under 2,000)","Town",0.78,38050,38050,0.65],
+  ["University of Dubuque","IA","Private Nonprofit","Small (under 2,000)","City: Small",0.56,31600,31600,0.55],
+  ["Hamline University","MN","Private Nonprofit","Small (under 2,000)","City: Large",0.65,43094,43094,0.68],
+  ["Augsburg University","MN","Private Nonprofit","Small (under 2,000)","City: Large",0.55,38640,38640,0.61],
+  ["St. Catherine University","MN","Private Nonprofit","Small (under 2,000)","City: Large",0.89,39490,39490,0.63],
+  ["University of St. Thomas","MN","Private Nonprofit","Medium (5,000-9,999)","City: Large",0.85,44628,44628,0.76],
 ];
 
-// ── ABBREVIATION MAP ──
+// ── ABBREVIATIONS ──
 const ABBREV = {
-  "ucla":          "University of California-Los Angeles",
-  "uc la":         "University of California-Los Angeles",
-  "ucb":           "University of California-Berkeley",
-  "uc berkeley":   "University of California-Berkeley",
-  "berkeley":      "University of California-Berkeley",
-  "ucsd":          "University of California-San Diego",
-  "uc san diego":  "University of California-San Diego",
-  "ucsb":          "University of California-Santa Barbara",
-  "ucd":           "University of California-Davis",
-  "uc davis":      "University of California-Davis",
-  "uci":           "University of California-Irvine",
-  "uc irvine":     "University of California-Irvine",
-  "usc":           "University of Southern California",
-  "southern cal":  "University of Southern California",
-  "stanford":      "Stanford University",
-  "caltech":       "California Institute of Technology",
-  "harvard":       "Harvard University",
-  "yale":          "Yale University",
-  "princeton":     "Princeton University",
-  "columbia":      "Columbia University in the City of New York",
-  "penn":          "University of Pennsylvania",
-  "upenn":         "University of Pennsylvania",
-  "dartmouth":     "Dartmouth College",
-  "brown":         "Brown University",
-  "cornell":       "Cornell University",
-  "mit":           "Massachusetts Institute of Technology",
-  "duke":          "Duke University",
-  "vanderbilt":    "Vanderbilt University",
-  "vandy":         "Vanderbilt University",
-  "rice":          "Rice University",
-  "notre dame":    "University of Notre Dame",
-  "cmu":           "Carnegie Mellon University",
-  "carnegie mellon":"Carnegie Mellon University",
-  "georgetown":    "Georgetown University",
-  "nyu":           "New York University",
-  "bu":            "Boston University",
-  "boston u":      "Boston University",
-  "northeastern":  "Northeastern University",
-  "tufts":         "Tufts University",
-  "emory":         "Emory University",
-  "wake forest":   "Wake Forest University",
-  "umich":         "University of Michigan-Ann Arbor",
-  "michigan":      "University of Michigan-Ann Arbor",
-  "uva":           "University of Virginia-Main Campus",
-  "virginia":      "University of Virginia-Main Campus",
-  "unc":           "University of North Carolina at Chapel Hill",
-  "chapel hill":   "University of North Carolina at Chapel Hill",
-  "uw madison":    "University of Wisconsin-Madison",
-  "uiuc":          "University of Illinois Urbana-Champaign",
-  "illinois":      "University of Illinois Urbana-Champaign",
-  "psu":           "Pennsylvania State University-Main Campus",
-  "penn state":    "Pennsylvania State University-Main Campus",
-  "osu":           "Ohio State University-Main Campus",
-  "ohio state":    "Ohio State University-Main Campus",
-  "uw":            "University of Washington-Seattle Campus",
-  "uf":            "University of Florida",
-  "ut austin":     "University of Texas at Austin",
-  "texas austin":  "University of Texas at Austin",
-  "georgia tech":  "Georgia Institute of Technology-Main Campus",
-  "gatech":        "Georgia Institute of Technology-Main Campus",
-  "uab":           "University of Alabama at Birmingham",
-  "alabama birmingham": "University of Alabama at Birmingham",
-  "pomona":        "Pomona College",
-  "cmc":           "Claremont McKenna College",
-  "harvey mudd":   "Harvey Mudd College",
-  "williams":      "Williams College",
-  "amherst":       "Amherst College",
-  "swarthmore":    "Swarthmore College",
-  "wellesley":     "Wellesley College",
-  "middlebury":    "Middlebury College",
-  "bowdoin":       "Bowdoin College",
-  "colby":         "Colby College",
-  "wesleyan":      "Wesleyan University",
-  "lmu":           "Loyola Marymount University",
-  "loyola marymount":"Loyola Marymount University",
-  "santa clara":   "Santa Clara University",
-  "pepperdine":    "Pepperdine University",
-  "sdsu":          "San Diego State University",
-  "san diego state":"San Diego State University",
+  "ucla":"University of California-Los Angeles","uc la":"University of California-Los Angeles",
+  "ucb":"University of California-Berkeley","uc berkeley":"University of California-Berkeley","berkeley":"University of California-Berkeley",
+  "ucsd":"University of California-San Diego","uc san diego":"University of California-San Diego",
+  "ucsb":"University of California-Santa Barbara","ucd":"University of California-Davis","uc davis":"University of California-Davis",
+  "uci":"University of California-Irvine","uc irvine":"University of California-Irvine",
+  "ucr":"University of California-Riverside","uc riverside":"University of California-Riverside",
+  "ucsc":"University of California-Santa Cruz","uc santa cruz":"University of California-Santa Cruz",
+  "ucm":"University of California-Merced","uc merced":"University of California-Merced",
+  "cal poly":"California Polytechnic State University-San Luis Obispo","cal poly slo":"California Polytechnic State University-San Luis Obispo","calpoly":"California Polytechnic State University-San Luis Obispo",
+  "cal poly pomona":"California State Polytechnic University-Pomona","cpp":"California State Polytechnic University-Pomona",
+  "sdsu":"San Diego State University","san diego state":"San Diego State University",
+  "sfsu":"San Francisco State University","csulb":"California State University-Long Beach","long beach state":"California State University-Long Beach",
+  "csuf":"California State University-Fullerton","cal state fullerton":"California State University-Fullerton",
+  "csun":"California State University-Northridge","cal state northridge":"California State University-Northridge",
+  "csula":"California State University-Los Angeles","cal state la":"California State University-Los Angeles",
+  "sac state":"California State University-Sacramento","csus":"California State University-Sacramento",
+  "chico state":"California State University-Chico","csu chico":"California State University-Chico",
+  "usc":"University of Southern California","southern cal":"University of Southern California",
+  "stanford":"Stanford University","caltech":"California Institute of Technology","cal tech":"California Institute of Technology",
+  "pomona":"Pomona College","cmc":"Claremont McKenna College","claremont mckenna":"Claremont McKenna College",
+  "harvey mudd":"Harvey Mudd College","lmu":"Loyola Marymount University","loyola marymount":"Loyola Marymount University",
+  "santa clara":"Santa Clara University","pepperdine":"Pepperdine University","chapman":"Chapman University",
+  "usd":"University of San Diego","u san diego":"University of San Diego",
+  "harvard":"Harvard University","yale":"Yale University","princeton":"Princeton University",
+  "columbia":"Columbia University in the City of New York",
+  "penn":"University of Pennsylvania","upenn":"University of Pennsylvania","u penn":"University of Pennsylvania",
+  "dartmouth":"Dartmouth College","brown":"Brown University","cornell":"Cornell University",
+  "mit":"Massachusetts Institute of Technology","cmu":"Carnegie Mellon University","carnegie mellon":"Carnegie Mellon University",
+  "georgia tech":"Georgia Institute of Technology-Main Campus","gatech":"Georgia Institute of Technology-Main Campus",
+  "rpi":"Rensselaer Polytechnic Institute","wpi":"Worcester Polytechnic Institute",
+  "duke":"Duke University","vanderbilt":"Vanderbilt University","vandy":"Vanderbilt University",
+  "rice":"Rice University","notre dame":"University of Notre Dame","nd":"University of Notre Dame",
+  "georgetown":"Georgetown University","emory":"Emory University","wake forest":"Wake Forest University",
+  "tulane":"Tulane University of Louisiana","tufts":"Tufts University","brandeis":"Brandeis University",
+  "cwru":"Case Western Reserve University","case western":"Case Western Reserve University",
+  "rochester":"University of Rochester","u rochester":"University of Rochester",
+  "lehigh":"Lehigh University","villanova":"Villanova University","bc":"Boston College","boston college":"Boston College",
+  "northeastern":"Northeastern University","bu":"Boston University","boston u":"Boston University",
+  "nyu":"New York University","fordham":"Fordham University","gwu":"George Washington University","george washington":"George Washington University",
+  "american university":"American University","american u":"American University",
+  "umich":"University of Michigan-Ann Arbor","michigan":"University of Michigan-Ann Arbor",
+  "uva":"University of Virginia-Main Campus","virginia":"University of Virginia-Main Campus",
+  "unc":"University of North Carolina at Chapel Hill","chapel hill":"University of North Carolina at Chapel Hill",
+  "uw madison":"University of Wisconsin-Madison","wisconsin":"University of Wisconsin-Madison",
+  "uiuc":"University of Illinois Urbana-Champaign","illinois":"University of Illinois Urbana-Champaign",
+  "psu":"Pennsylvania State University-Main Campus","penn state":"Pennsylvania State University-Main Campus",
+  "osu":"Ohio State University-Main Campus","ohio state":"Ohio State University-Main Campus",
+  "uw":"University of Washington-Seattle Campus","uf":"University of Florida","florida":"University of Florida",
+  "ut austin":"University of Texas at Austin","texas austin":"University of Texas at Austin",
+  "umn":"University of Minnesota-Twin Cities","umd":"University of Maryland-College Park","maryland":"University of Maryland-College Park",
+  "uconn":"University of Connecticut","pitt":"University of Pittsburgh-Pittsburgh Campus","u pitt":"University of Pittsburgh-Pittsburgh Campus",
+  "byu":"Brigham Young University-Provo","brigham young":"Brigham Young University-Provo",
+  "howard":"Howard University","spelman":"Spelman College","morehouse":"Morehouse College","hampton":"Hampton University","fisk":"Fisk University",
+  "risd":"Rhode Island School of Design","pratt":"Pratt Institute-Main","sva":"School of Visual Arts",
+  "mica":"Maryland Institute College of Art","calarts":"California Institute of the Arts","cal arts":"California Institute of the Arts",
+  "berklee":"Berklee College of Music","juilliard":"The Juilliard School",
+  "west point":"United States Military Academy","usma":"United States Military Academy",
+  "naval academy":"United States Naval Academy","usna":"United States Naval Academy",
+  "air force academy":"United States Air Force Academy","usafa":"United States Air Force Academy",
+  "tcu":"Texas Christian University","smu":"Southern Methodist University","baylor":"Baylor University",
+  "texas a&m":"Texas A&M University-College Station","tamu":"Texas A&M University-College Station",
+  "uab":"University of Alabama at Birmingham","alabama birmingham":"University of Alabama at Birmingham",
+  "williams":"Williams College","amherst":"Amherst College","swarthmore":"Swarthmore College",
+  "wellesley":"Wellesley College","middlebury":"Middlebury College","bowdoin":"Bowdoin College",
+  "colby":"Colby College","bates":"Bates College","wesleyan":"Wesleyan University",
+  "vassar":"Vassar College","hamilton":"Hamilton College","colgate":"Colgate University",
+  "barnard":"Barnard College","smith":"Smith College","mount holyoke":"Mount Holyoke College",
+  "bryn mawr":"Bryn Mawr College","oberlin":"Oberlin College","grinnell":"Grinnell College",
+  "carleton":"Carleton College","macalester":"Macalester College","kenyon":"Kenyon College",
+  "denison":"Denison University","bucknell":"Bucknell University","lafayette":"Lafayette College",
+  "reed":"Reed College","whitman":"Whitman College","gonzaga":"Gonzaga University",
+  "colorado college":"Colorado College","du":"University of Denver","u denver":"University of Denver",
+  "suny binghamton":"SUNY at Binghamton","binghamton":"SUNY at Binghamton",
+  "suny buffalo":"SUNY at Buffalo","ub":"SUNY at Buffalo","buffalo":"SUNY at Buffalo",
+  "suny stony brook":"Stony Brook University","stony brook":"Stony Brook University",
+  "suny albany":"SUNY at Albany","babson":"Babson College","bentley":"Bentley University",
+  "uchicago":"University of Chicago","northwestern":"Northwestern University",
+  "holy cross":"College of the Holy Cross","davidson":"Davidson College",
+  "richmond":"University of Richmond","elon":"Elon University",
+  "william and mary":"William and Mary","wm":"William and Mary",
+  "clemson":"Clemson University","virginia tech":"Virginia Tech","vt":"Virginia Tech",
 };
 
-const FILLER = {"the":1,"of":1,"at":1,"in":1,"a":1,"an":1,"and":1,"for":1,"university":1};
-
-function normalize(s) {
-  return s.toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
-}
-function normalizeStrict(s) {
-  return normalize(s).split(' ').filter(w => w.length > 1 && !FILLER[w]).join(' ');
-}
-function scoreMatch(query, candidateName) {
-  const q  = normalize(query);
-  const c  = normalize(candidateName);
-  const qs = normalizeStrict(query);
-  const cs = normalizeStrict(candidateName);
-  if (q === c || (qs === cs && qs.length > 0)) return 100;
-  if (c.includes(q)) return 92;
-  if (cs.includes(qs) && qs.length > 2) return 92;
-  const qw = qs.split(' ').filter(w => w.length > 1);
-  const allFound = qw.every(w => cs.includes(w));
-  if (allFound && qw.length >= 2) {
-    const extras = cs.split(' ').filter(w => w.length > 1 && !qw.includes(w)).length;
-    return extras <= 2 ? 88 : 78;
+const FILLER = {the:1,of:1,at:1,in:1,a:1,an:1,and:1,for:1};
+function normalize(s){return s.toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();}
+function strict(s){return normalize(s).split(' ').filter(w=>w.length>1&&!FILLER[w]).join(' ');}
+function scoreMatch(q,name){
+  const nq=normalize(q),nc=normalize(name),sq=strict(q),sc=strict(name);
+  if(nq===nc||( sq===sc&&sq.length>0)) return 100;
+  if(nc.includes(nq)) return 92;
+  if(sc.includes(sq)&&sq.length>2) return 92;
+  const qw=sq.split(' ').filter(w=>w.length>1);
+  const allFound=qw.every(w=>sc.includes(w));
+  if(allFound&&qw.length>=2){
+    const extras=sc.split(' ').filter(w=>w.length>1&&!qw.includes(w)).length;
+    return extras<=2?88:78;
   }
-  const found = qw.filter(w => cs.includes(w)).length;
-  if (qw.length >= 3 && found >= qw.length - 1) return 62;
-  if (found >= 1) return 30;
+  const found=qw.filter(w=>sc.includes(w)).length;
+  if(qw.length>=3&&found>=qw.length-1) return 62;
+  if(found>=1) return 30;
   return 0;
 }
 
-// ── SAMPLE DATA for pre-filled rows ──
-const SAMPLE_ROWS = [
-  { name:"Stanford University",         level:"High Reach" },
-  { name:"University of Notre Dame",    level:"Reach" },
-  { name:"University of Wisconsin-Madison", level:"Target" },
-  { name:"San Diego State University",  level:"Likely" },
-  { name:"University of Alabama at Birmingham", level:"Highly Likely" },
-];
-
-// ── RENDER TABLE ──
-// Array indices: [0]name [1]state [2]type [3]size [4]setting [5]accept [6]inState [7]OOS [8]gradRate
-const COL = { name:0, state:1, type:2, size:3, setting:4, accept:5, instate:6, oos:7, grad:8 };
-
-function fmt(val, type) {
-  if (val === null || val === undefined || val === '') return '<span style="color:#bbb">—</span>';
-  if (type === 'pct') return Math.round(val * 100) + '%';
-  if (type === 'usd') return '$' + Number(val).toLocaleString();
-  return val;
-}
-
-const LEVELS = ["High Reach","Reach","Target","Likely","Highly Likely"];
-const LEVEL_CLASS = {
-  "High Reach":"badge-high-reach","Reach":"badge-reach",
-  "Target":"badge-target","Likely":"badge-likely","Highly Likely":"badge-high-likely"
-};
-
-function levelDropdown(selected, rowId) {
-  const opts = LEVELS.map(l =>
-    `<option value="${l}" ${l===selected?'selected':''}>${l}</option>`
-  ).join('');
-  return `<select class="level-select" id="level-${rowId}" onchange="updateLevelBadge(${rowId})"
-    style="font-family:'DM Sans',sans-serif;font-size:11px;padding:3px 6px;border-radius:5px;
-    border:1px solid var(--border);background:var(--purple-tint);color:var(--purple-dark);
-    font-weight:600;cursor:pointer;width:100%">${opts}</select>`;
-}
-
-function updateLevelBadge(rowId) {
-  const sel = document.getElementById('level-' + rowId);
-  const val = sel.value;
-  sel.className = 'level-select';
-  const bg = {
-    "High Reach": "var(--high-reach-bg)", "Reach": "var(--reach-bg)",
-    "Target": "var(--target-bg)", "Likely": "var(--likely-bg)",
-    "Highly Likely": "var(--high-likely-bg)"
-  }[val] || '';
-  const fc = {
-    "High Reach": "var(--high-reach-text)", "Reach": "var(--reach-text)",
-    "Target": "var(--target-text)", "Likely": "var(--likely-text)",
-    "Highly Likely": "var(--high-likely-text)"
-  }[val] || '';
-  sel.style.background = bg;
-  sel.style.color = fc;
-}
-
-function buildRows() {
-  const tbody = document.getElementById('demoTableBody');
-  let html = '';
-  // Pre-filled sample rows — each has a working level dropdown
-  SAMPLE_ROWS.forEach((s, i) => {
-    const c = COLLEGES.find(col => col[COL.name] === s.name);
-    if (c) {
-      html += `<tr>
-        <td class="col-name">${c[COL.name]}</td>
-        <td class="level-cell">${levelDropdown(s.level, i)}</td>
-        <td class="autofill">${c[COL.state]}</td>
-        <td class="autofill">${c[COL.type]}</td>
-        <td class="autofill" style="font-size:10px;white-space:normal;min-width:100px">${c[COL.size]}</td>
-        <td class="autofill">${c[COL.setting]}</td>
-        <td class="autofill">${fmt(c[COL.accept],'pct')}</td>
-        <td class="autofill">${fmt(c[COL.instate],'usd')}</td>
-        <td class="autofill">${fmt(c[COL.oos],'usd')}</td>
-        <td class="autofill">${fmt(c[COL.grad],'pct')}</td>
-      </tr>`;
-    }
-  });
-  // Input row — level dropdown starts blank
-  html += `<tr class="input-row" id="inputRow">
-    <td class="col-name" id="inputCell" style="color:var(--grey-mid);font-style:italic;font-weight:400;">
-      Type above to search<span class="cursor"></span>
-    </td>
-    <td class="level-cell">${levelDropdown('Target', 99)}</td>
-    <td id="af-state"></td>
-    <td id="af-type"></td>
-    <td id="af-size"></td>
-    <td id="af-setting"></td>
-    <td id="af-accept"></td>
-    <td id="af-instate"></td>
-    <td id="af-oos"></td>
-    <td id="af-grad"></td>
-  </tr>`;
-  // Empty rows
-  for (let i = 0; i < 4; i++) {
-    html += `<tr>
-      <td class="col-name empty">—</td>
-      <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-    </tr>`;
+function findCollege(input){
+  const abbrev=ABBREV[input.toLowerCase()];
+  if(abbrev){
+    const c=COLLEGES.find(c=>c[0]===abbrev);
+    if(c) return {college:c,confidence:100};
   }
-  tbody.innerHTML = html;
-  // Apply initial colors to all dropdowns
-  SAMPLE_ROWS.forEach((s, i) => updateLevelBadge(i));
-  updateLevelBadge(99);
+  const scored=COLLEGES.map(c=>({college:c,score:scoreMatch(input,c[0])}))
+    .filter(s=>s.score>=25).sort((a,b)=>b.score-a.score);
+  if(!scored.length) return null;
+  const best=scored[0],second=scored[1];
+  const ambiguous=second&&best.score<88&&(best.score-second.score)<=12;
+  if(ambiguous){
+    const suggestions=scored.filter(s=>best.score-s.score<=12).slice(0,4).map(s=>s.college[0]);
+    return {ambiguous:true,suggestions};
+  }
+  return {college:best.college,confidence:best.score};
 }
 
-// ── SEARCH LOGIC ──
-let debounceTimer;
-document.getElementById('demoInput').addEventListener('input', function() {
-  clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => runSearch(this.value), 280);
+// ── COUNTER ──
+function updateCounter(){
+  const n=schools.length;
+  document.getElementById('counterText').textContent=`${n} of ${MAX_SCHOOLS}`;
+  const pips=document.getElementById('counterPips');
+  pips.innerHTML='';
+  for(let i=0;i<MAX_SCHOOLS;i++){
+    const d=document.createElement('div');
+    d.className='pip'+(i<n?(n>=MAX_SCHOOLS?' full':' filled'):'');
+    pips.appendChild(d);
+  }
+  document.getElementById('searchInput').disabled=n>=MAX_SCHOOLS;
+}
+
+// ── SEARCH ──
+let debounce;
+document.getElementById('searchInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){clearTimeout(debounce);doSearch(e.target.value);}
+});
+document.getElementById('searchInput').addEventListener('input',e=>{
+  clearTimeout(debounce);
+  debounce=setTimeout(()=>{
+    const v=e.target.value.trim();
+    if(v.length>=3) previewSearch(v);
+    else document.getElementById('searchMsg').textContent='';
+  },300);
 });
 
-function runSearch(raw) {
-  const input = raw.trim();
-  const msgEl = document.getElementById('resultMsg');
-  const inputCell = document.getElementById('inputCell');
+function previewSearch(input){
+  const result=findCollege(input);
+  const msg=document.getElementById('searchMsg');
+  if(!result){msg.className='search-msg msg-err';msg.textContent='No match found — try a different spelling or abbreviation';return;}
+  if(result.ambiguous){msg.className='search-msg msg-warn';msg.textContent='Did you mean: '+result.suggestions.slice(0,3).join(' | ')+' — type more to narrow down';return;}
+  msg.className='search-msg msg-ok';
+  msg.textContent='✓ Found: '+result.college[0]+(result.confidence<90?' (matched)':'')+' — press Enter to add';
+}
 
-  if (!input) {
-    msgEl.textContent = '';
-    clearAutofill();
-    inputCell.innerHTML = 'Type above to search<span class="cursor"></span>';
-    inputCell.style.color = 'var(--grey-mid)';
-    inputCell.style.fontStyle = 'italic';
+function doSearch(input){
+  const msg=document.getElementById('searchMsg');
+  if(schools.length>=MAX_SCHOOLS){showModal();return;}
+  const trimmed=input.trim();
+  if(!trimmed) return;
+  const result=findCollege(trimmed);
+  if(!result){msg.className='search-msg msg-err';msg.textContent='No match found — try a different spelling';return;}
+  if(result.ambiguous){msg.className='search-msg msg-warn';msg.textContent='Did you mean: '+result.suggestions.join(' | ')+' — type more to narrow down';return;}
+  // Check duplicate
+  if(schools.find(s=>s.college[0]===result.college[0])){
+    msg.className='search-msg msg-warn';msg.textContent=result.college[0]+' is already on your list';return;
+  }
+  schools.push({
+    college:result.college,level:'Target',
+    appType:'RD',deadline:'',submitted:false,decision:'—',notes:''
+  });
+  document.getElementById('searchInput').value='';
+  msg.textContent='';
+  renderTable();
+  updateCounter();
+  if(schools.length>=MAX_SCHOOLS) showModal();
+}
+
+// ── RENDER ──
+function levelStyle(l){
+  const m={
+    'High Reach':['var(--hr-bg)','var(--hr-tx)'],
+    'Reach':['var(--r-bg)','var(--r-tx)'],
+    'Target':['var(--t-bg)','var(--t-tx)'],
+    'Likely':['var(--l-bg)','var(--l-tx)'],
+    'Highly Likely':['var(--hl-bg)','var(--hl-tx)'],
+  };
+  return m[l]||['#eee','#333'];
+}
+function appBadge(t){
+  const bg={RD:'#EDE9F4',EA:'#D4EDDA',REA:'#E8F4F0',ED:'#FFF8E1',ED2:'#FEF3D7',Rolling:'#E8F4F0'};
+  const fc={RD:'#4A3F63',EA:'#1B5E20',REA:'#2E7D6B',ED:'#B05C00',ED2:'#8B6000',Rolling:'#2E7D6B'};
+  return `<span class="app-badge" style="background:${bg[t]||'#eee'};color:${fc[t]||'#333'}">${t}</span>`;
+}
+function decBadge(d){
+  const bg={Applied:'#EDE9F4',Accepted:'#D4EDDA',Deferred:'#FFF8E1',Waitlisted:'#EDE9F4',Denied:'#FFF3E0','Enrolled ✓':'#D4EDDA','—':'transparent'};
+  const fc={Applied:'#4A3F63',Accepted:'#1B5E20',Deferred:'#B05C00',Waitlisted:'#6B5B8B',Denied:'#E65100','Enrolled ✓':'#1B5E20','—':'#aaa'};
+  return `<span class="dec-badge" style="background:${bg[d]||'#eee'};color:${fc[d]||'#333'}">${d}</span>`;
+}
+function fmtUSD(v){return v===0?'$0':v?'$'+Number(v).toLocaleString():'—';}
+function fmtPct(v){return v||v===0?Math.round(v*100)+'%':'—';}
+
+function renderTable(){
+  const tbody=document.getElementById('tableBody');
+  if(!schools.length){
+    tbody.innerHTML=`<tr><td colspan="16" style="text-align:center;padding:32px;color:var(--grm);font-style:italic;">
+      Type a college name above and press Enter to start building your list
+    </td></tr>`;
     return;
   }
+  let html='';
+  schools.forEach((s,i)=>{
+    const c=s.college;
+    const [lbg,lfc]=levelStyle(s.level);
+    const row_bg=i%2===0?'var(--wh)':'var(--bg)';
+    const levelOpts=LEVELS.map(l=>`<option value="${l}" ${l===s.level?'selected':''}>${l}</option>`).join('');
+    const appOpts=APP_TYPES.map(t=>`<option value="${t}" ${t===s.appType?'selected':''}>${t}</option>`).join('');
+    const decOpts=DECISIONS.map(d=>`<option value="${d}" ${d===s.decision?'selected':''}>${d}</option>`).join('');
+    html+=`<tr style="background:${row_bg}">
+      <td class="td-name" style="background:var(--pt)">
+        ${c[0]}
+        <button class="del-btn" onclick="removeSchool(${i})" title="Remove">✕</button>
+      </td>
+      <td style="background:${lbg};padding:5px 8px;">
+        <select class="level-sel" style="background:${lbg};color:${lfc};" onchange="updateField(${i},'level',this.value)">${levelOpts}</select>
+      </td>
+      <td class="td-auto">${c[1]}</td>
+      <td class="td-auto">${c[2]}</td>
+      <td class="td-auto" style="font-size:10px;white-space:normal;min-width:100px">${c[3]}</td>
+      <td class="td-auto">${c[4]}</td>
+      <td class="td-auto">${fmtPct(c[5])}</td>
+      <td class="td-auto">${fmtUSD(c[6])}</td>
+      <td class="td-auto">${fmtUSD(c[7])}</td>
+      <td class="td-auto">${fmtPct(c[8])}</td>
+      <td class="td-track" style="text-align:center;">
+        <select class="level-sel" style="background:transparent;color:var(--grdark);font-weight:400;" onchange="updateField(${i},'appType',this.value)">${appOpts}</select>
+      </td>
+      <td class="td-track">
+        <input class="date-input" type="text" placeholder="MM/DD/YYYY"
+          value="${s.deadline}" onchange="updateField(${i},'deadline',this.value)">
+      </td>
+      <td class="td-track chk" onclick="toggleSubmitted(${i})">${s.submitted?'☑':'☐'}</td>
+      <td class="td-track" style="text-align:center;">${decBadge(s.decision)}
+        <select style="display:block;width:100%;margin-top:3px;font-size:10px;border:none;background:transparent;color:var(--grdark);cursor:pointer;"
+          onchange="updateField(${i},'decision',this.value)">${decOpts}</select>
+      </td>
+      <td class="td-track">
+        <input class="notes-input" type="text" placeholder="Essay status, notes..."
+          value="${s.notes}" onchange="updateField(${i},'notes',this.value)">
+      </td>
+    </tr>`;
+  });
 
-  // Check abbreviation map
-  const abbrev = ABBREV[input.toLowerCase()];
-  let result = null;
-  if (abbrev) {
-    result = COLLEGES.find(c => c[0] === abbrev);
+  // Upgrade wall after 8 schools or if at limit
+  if(schools.length>=MAX_SCHOOLS){
+    html+=`<tr class="upgrade-row">
+      <td colspan="16">
+        <div class="upgrade-row-inner">
+          <div>🎓</div>
+          <div>
+            <p><strong>You've used all 8 free slots.</strong> The full tracker holds 30 schools, saves permanently, and includes complete dashboard tracking.</p>
+          </div>
+          <a href="YOUR_ETSY_TRACKER_LINK" class="btn-etsy" style="background:var(--gd);color:white;" target="_blank">Get the Full Tracker →</a>
+        </div>
+      </td>
+    </tr>`;
   }
 
-  if (!result) {
-    // Score all candidates
-    const scored = COLLEGES.map(c => ({ college: c, score: scoreMatch(input, c[0]) }))
-      .filter(s => s.score >= 25)
-      .sort((a, b) => b.score - a.score);
-
-    if (scored.length === 0) {
-      msgEl.className = 'demo-result-msg msg-none';
-      msgEl.textContent = 'No match found — try a different spelling or abbreviation (e.g. UCLA, Penn State, Emory)';
-      clearAutofill();
-      inputCell.innerHTML = input + '<span class="cursor"></span>';
-      inputCell.style.color = 'var(--orange)';
-      inputCell.style.fontStyle = 'italic';
-      return;
-    }
-
-    const best = scored[0];
-    const second = scored[1];
-    const isAmbiguous = second && best.score < 88 && (best.score - second.score) <= 12;
-
-    if (isAmbiguous) {
-      const suggestions = scored
-        .filter(s => best.score - s.score <= 12)
-        .slice(0, 4)
-        .map(s => s.college[0]);
-      msgEl.className = 'demo-result-msg msg-suggest';
-      msgEl.textContent = 'Did you mean: ' + suggestions.join(' | ') + ' — type more to narrow down';
-      clearAutofill();
-      inputCell.innerHTML = input + '<span class="cursor"></span>';
-      inputCell.style.color = 'var(--amber)';
-      inputCell.style.fontStyle = 'italic';
-      return;
-    }
-
-    result = best.college;
-  }
-
-  // Found a confident match
-  fillAutofill(result);
-  inputCell.textContent = result[0];
-  inputCell.style.color = 'var(--purple-dark)';
-  inputCell.style.fontStyle = 'normal';
-  inputCell.style.fontWeight = '600';
-  msgEl.className = 'demo-result-msg msg-found';
-  msgEl.textContent = '✓ Found: ' + result[0] + (result[0] !== raw.trim() ? ' (matched from "' + raw.trim() + '")' : '');
+  tbody.innerHTML=html;
+  if(document.getElementById('panel-dash').style.display!=='none') renderDashboard();
 }
 
-function fillAutofill(c) {
-  document.getElementById('af-state').textContent   = c[COL.state];
-  document.getElementById('af-type').textContent    = c[COL.type];
-  document.getElementById('af-size').textContent    = c[COL.size];
-  document.getElementById('af-setting').textContent = c[COL.setting];
-  document.getElementById('af-accept').textContent  = Math.round(c[COL.accept] * 100) + '%';
-  document.getElementById('af-instate').textContent = '$' + Number(c[COL.instate]).toLocaleString();
-  document.getElementById('af-oos').textContent     = '$' + Number(c[COL.oos]).toLocaleString();
-  document.getElementById('af-grad').textContent    = Math.round(c[COL.grad] * 100) + '%';
-  ['af-state','af-type','af-size','af-setting','af-accept','af-instate','af-oos','af-grad']
-    .forEach(id => {
-      const el = document.getElementById(id);
-      el.classList.add('autofill');
-      el.style.color = 'var(--grey-dark)';
-      el.style.fontStyle = 'normal';
-    });
+function updateField(i,field,val){
+  schools[i][field]=val;
+  if(field==='level') renderTable();
+  else if(document.getElementById('panel-dash').style.display!=='none') renderDashboard();
+}
+function toggleSubmitted(i){
+  schools[i].submitted=!schools[i].submitted;
+  renderTable();
+}
+function removeSchool(i){
+  schools.splice(i,1);
+  renderTable();
+  updateCounter();
 }
 
-function clearAutofill() {
-  ['af-state','af-type','af-size','af-setting','af-accept','af-instate','af-oos','af-grad']
-    .forEach(id => {
-      const el = document.getElementById(id);
-      el.textContent = '';
-      el.classList.remove('autofill');
-    });
+// ── DASHBOARD ──
+function renderDashboard(){
+  // Balance
+  const lc={};
+  LEVELS.forEach(l=>lc[l]=0);
+  schools.forEach(s=>lc[s.level]=(lc[s.level]||0)+1);
+  let bHtml='';
+  LEVELS.forEach(l=>{
+    const [bg,fc]=levelStyle(l);
+    bHtml+=`<div class="dash-row" style="background:${bg}"><span style="color:${fc};font-weight:600">${l}</span><span class="dash-num" style="color:${fc}">${lc[l]}</span></div>`;
+  });
+  bHtml+=`<div class="dash-row"><span style="font-weight:600">Total</span><span class="dash-num">${schools.length}</span></div>`;
+  document.getElementById('dash-balance').innerHTML=bHtml;
+
+  // Progress
+  const sub=schools.filter(s=>s.submitted).length;
+  const ea=schools.filter(s=>s.appType==='EA'||s.appType==='ED'||s.appType==='REA').length;
+  document.getElementById('dash-progress').innerHTML=`
+    <div class="dash-row"><span>Submitted</span><span class="dash-num" style="color:var(--gd)">${sub}</span></div>
+    <div class="dash-row"><span>Not Yet Submitted</span><span class="dash-num" style="color:var(--amb)">${schools.length-sub}</span></div>
+    <div class="dash-row"><span>EA / ED / REA</span><span class="dash-num" style="color:var(--pm)">${ea}</span></div>`;
+
+  // Decisions
+  const dc={};
+  schools.forEach(s=>{dc[s.decision]=(dc[s.decision]||0)+1;});
+  const decItems=[['Accepted 🎉','var(--hl-tx)','var(--hl-bg)'],['Deferred','var(--amb)','var(--ambt)'],
+    ['Waitlisted','var(--pm)','var(--pt)'],['Denied','var(--org)','var(--orgt)'],['Applied','var(--pd)','var(--pt)']];
+  let dHtml='';
+  decItems.forEach(([label,fc,bg])=>{
+    const key=label.replace(' 🎉','');
+    dHtml+=`<div class="dash-row" style="background:${bg}"><span style="color:${fc};font-weight:600">${label}</span><span class="dash-num" style="color:${fc}">${dc[key]||0}</span></div>`;
+  });
+  document.getElementById('dash-decisions').innerHTML=dHtml;
 }
+
+// ── TABS ──
+function switchTab(tab){
+  const isList=tab==='list';
+  document.getElementById('panel-list').style.display=isList?'':'none';
+  document.getElementById('panel-dash').style.display=isList?'none':'';
+  document.getElementById('tab-list').className='tab'+(isList?' active':'');
+  document.getElementById('tab-dash').className='tab'+(isList?'':' active');
+  if(!isList) renderDashboard();
+}
+
+// ── MODAL ──
+function showModal(){document.getElementById('modalOverlay').classList.add('show');}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('show');}
+document.getElementById('modalOverlay').addEventListener('click',e=>{
+  if(e.target===document.getElementById('modalOverlay')) closeModal();
+});
 
 // ── INIT ──
-buildRows();
+updateCounter();
+renderTable();
 </script>
 </body>
 </html>
